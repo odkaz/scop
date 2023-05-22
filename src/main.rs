@@ -1,61 +1,70 @@
-use std::fs::File;
-use std::io::{ self, BufRead, BufReader};
-#[derive(Debug)]
-struct Point(f32, f32, f32);
-#[derive(Debug)]
-struct Face(Vec<i32>);
+extern crate sdl2;
+extern crate gl;
+pub mod render_gl;
 
-fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
-    let file = File::open(filename).unwrap();
-    return io::BufReader::new(file).lines();
-}
 
-fn get_point(line: String) -> Point {
-    let mut tmp = Vec::new();
-    for byte in line.split_whitespace() {
-        let t: f32 = match byte.parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-        tmp.push(t);
-    }
-    Point(tmp[0], tmp[1], tmp[2])
-}
-
-fn get_face(line: String) -> Face {
-    let mut tmp = Vec::new();
-    for byte in line.split_whitespace() {
-        let t: i32 = match byte.parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-        tmp.push(t);
-    }
-    Face(tmp)
-}
 
 fn main() {
-    let file_path = "./resources/42.obj";
-    let mut points = Vec::new();
-    let mut faces = Vec::new();
+    let sdl = sdl2::init().unwrap();
+    let video_subsystem = sdl.video().unwrap();
 
-    let lines = read_lines(file_path.to_string());
-    for line in lines {
-        let str1 = line.unwrap();
-        let id = str1.chars().nth(0).unwrap();
+    let gl_attr = video_subsystem.gl_attr();
 
-        match id {
-            'v' => {
-                let p = get_point(str1);
-                points.push(p);
-            },
-            'f' => {
-                let f = get_face(str1);
-                faces.push(f);
-            },
-            _ => (),
-        }
+    gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
+    gl_attr.set_context_version(3, 3);
+
+    let window = video_subsystem
+        .window("Game", 900, 700)
+        .opengl()
+        .resizable()
+        .build()
+        .unwrap();
+
+    let _gl_context = window.gl_create_context().unwrap();
+    let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+
+    unsafe {
+        gl::Viewport(0, 0, 900, 700);
+        gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
-    println!("{:#?}", points);
-    println!("{:#?}", faces);
+
+    //event
+    let mut event_pump = sdl.event_pump().unwrap();
+
+
+
+    use std::ffi::CString;
+
+    let vert_shader = render_gl::Shader::from_vert_source(
+        &CString::new(include_str!("triangle.vert")).unwrap()
+    ).unwrap();
+
+    let frag_shader = render_gl::Shader::from_frag_source(
+        &CString::new(include_str!("triangle.frag")).unwrap()
+    ).unwrap();
+
+    let shader_program = render_gl::Program::from_shaders(
+        &[vert_shader, frag_shader]
+    ).unwrap();
+
+    shader_program.set_used();
+
+
+    'main : loop {
+
+        //event handler
+        for event in event_pump.poll_iter() {
+            match event {
+                sdl2::event::Event::Quit {..} => break 'main,
+                _ => {},
+            }
+        }
+
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+
+        window.gl_swap_window();
+    }
+
 }
