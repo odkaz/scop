@@ -1,10 +1,47 @@
-extern crate sdl2;
 extern crate gl;
+extern crate sdl2;
+extern crate nalgebra_glm as glm;
 pub mod render_gl;
 
 
+// use libc::c_void;
+use std::ffi::CString;
+
+// fn print_mat4(item: glm::Mat4) {
+//     for r in 0..4 {
+//         for c in 0..4 {
+//             println!("{:?}", item[(r, c)]);
+//         }
+//     }
+// }
+
+// fn print_vec4(item: glm::Vec4) {
+//     for r in 0..4 {
+//         println!("{:?}", item[r]);
+//     }
+// }
 
 fn main() {
+    //test
+    let vec = glm::vec4(1.0, 0.0, 0.0, 1.0);
+    let trans = glm::identity();
+
+    // let trans = glm::translate(&trans, &glm::vec3(1.0, 1.0, 0.0));     //translate
+
+    let trans = glm::rotate(
+        &trans,
+        glm::radians(&glm::vec1(90.0))[0],
+        &glm::vec3(0.0, 0.0, 1.0),
+    ); //rotate
+
+    let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
+    let res = trans * vec;
+
+    // print_mat4(trans);
+    // println!();
+    // print_vec4(res);
+
+    //end test
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
 
@@ -21,7 +58,8 @@ fn main() {
         .unwrap();
 
     let _gl_context = window.gl_create_context().unwrap();
-    let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    let _gl =
+        gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     unsafe {
         gl::Viewport(0, 0, 900, 700);
@@ -32,29 +70,72 @@ fn main() {
     let mut event_pump = sdl.event_pump().unwrap();
 
 
+    let vert_shader =
+        render_gl::Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap())
+            .unwrap();
 
-    use std::ffi::CString;
+    // // passing matrix to shader leaving it for now
+    // unsafe {
+    //     let c_str = CString::new("transform").unwrap();
+    //     let transformLoc = gl::GetUniformLocation(vert_shader.id(), c_str.as_ptr() as *const i8);
+    //     gl::UniformMatrix4fv(transformLoc, 1, gl::FALSE, glm::value_ptr(&trans).as_ptr() as *const f32);
+    // }
 
-    let vert_shader = render_gl::Shader::from_vert_source(
-        &CString::new(include_str!("triangle.vert")).unwrap()
-    ).unwrap();
+    let frag_shader =
+        render_gl::Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap())
+            .unwrap();
 
-    let frag_shader = render_gl::Shader::from_frag_source(
-        &CString::new(include_str!("triangle.frag")).unwrap()
-    ).unwrap();
-
-    let shader_program = render_gl::Program::from_shaders(
-        &[vert_shader, frag_shader]
-    ).unwrap();
+    let shader_program = render_gl::Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
 
     shader_program.set_used();
 
     let vertices: Vec<f32> = vec![
         // positions      // colors
-        0.5, -0.5, 0.0,   1.0, 0.0, 0.0,   // bottom right
-        -0.5, -0.5, 0.0,  0.0, 1.0, 0.0,   // bottom left
-        0.0,  0.5, 0.0,   0.0, 0.0, 1.0    // top
+        0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
+        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
+        0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
     ];
+
+    let cube_vertices: Vec<f32> = vec![
+        -1.0,-1.0,-1.0, // triangle 1 : begin
+        -1.0,-1.0, 1.0,
+        -1.0, 1.0, 1.0, // triangle 1 : end
+        1.0, 1.0,-1.0, // triangle 2 : begin
+        -1.0,-1.0,-1.0,
+        -1.0, 1.0,-1.0, // triangle 2 : end
+        1.0,-1.0, 1.0,
+        -1.0,-1.0,-1.0,
+        1.0,-1.0,-1.0,
+        1.0, 1.0,-1.0,
+        1.0,-1.0,-1.0,
+        -1.0,-1.0,-1.0,
+        -1.0,-1.0,-1.0,
+        -1.0, 1.0, 1.0,
+        -1.0, 1.0,-1.0,
+        1.0,-1.0, 1.0,
+        -1.0,-1.0, 1.0,
+        -1.0,-1.0,-1.0,
+        -1.0, 1.0, 1.0,
+        -1.0,-1.0, 1.0,
+        1.0,-1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0,-1.0,-1.0,
+        1.0, 1.0,-1.0,
+        1.0,-1.0,-1.0,
+        1.0, 1.0, 1.0,
+        1.0,-1.0, 1.0,
+        1.0, 1.0, 1.0,
+        1.0, 1.0,-1.0,
+        -1.0, 1.0,-1.0,
+        1.0, 1.0, 1.0,
+        -1.0, 1.0,-1.0,
+        -1.0, 1.0, 1.0,
+        1.0, 1.0, 1.0,
+        -1.0, 1.0, 1.0,
+        1.0,-1.0, 1.0
+    ];
+
+
 
     let mut vbo: gl::types::GLuint = 0;
     unsafe {
@@ -64,10 +145,10 @@ fn main() {
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(
-            gl::ARRAY_BUFFER, // target
+            gl::ARRAY_BUFFER,                                                       // target
             (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
             vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-            gl::STATIC_DRAW, // usage
+            gl::STATIC_DRAW,                               // usage
         );
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
     }
@@ -83,35 +164,34 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::EnableVertexAttribArray(0); // this is "layout (location = 0)" in vertex shader
         gl::VertexAttribPointer(
-            0, // index of the generic vertex attribute ("layout (location = 0)")
-            3, // the number of components per generic vertex attribute
+            0,         // index of the generic vertex attribute ("layout (location = 0)")
+            3,         // the number of components per generic vertex attribute
             gl::FLOAT, // data type
             gl::FALSE, // normalized (int-to-float conversion)
             (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-            std::ptr::null() // offset of the first component
+            std::ptr::null(),                                     // offset of the first component
         );
 
         gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
         gl::VertexAttribPointer(
-            1, // index of the generic vertex attribute ("layout (location = 0)")
-            3, // the number of components per generic vertex attribute
+            1,         // index of the generic vertex attribute ("layout (location = 0)")
+            3,         // the number of components per generic vertex attribute
             gl::FLOAT, // data type
             gl::FALSE, // normalized (int-to-float conversion)
             (6 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-            (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid // offset of the first component
+            (3 * std::mem::size_of::<f32>()) as *const gl::types::GLvoid, // offset of the first component
         );
 
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         gl::BindVertexArray(0);
     }
 
-    'main : loop {
-
+    'main: loop {
         //event handler
         for event in event_pump.poll_iter() {
             match event {
-                sdl2::event::Event::Quit {..} => break 'main,
-                _ => {},
+                sdl2::event::Event::Quit { .. } => break 'main,
+                _ => {}
             }
         }
 
@@ -124,13 +204,12 @@ fn main() {
             gl::BindVertexArray(vao);
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
-                0, // starting index in the enabled arrays
-                3 // number of indices to be rendered
+                0,             // starting index in the enabled arrays
+                3,             // number of indices to be rendered
             );
         }
 
 
         window.gl_swap_window();
     }
-
 }
