@@ -23,7 +23,6 @@ use std::ffi::CString;
 fn main() {
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
-
     let gl_attr = video_subsystem.gl_attr();
 
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
@@ -35,7 +34,6 @@ fn main() {
         .resizable()
         .build()
         .unwrap();
-
     let _gl_context = window.gl_create_context().unwrap();
     let _gl =
         gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
@@ -47,17 +45,13 @@ fn main() {
 
     //event
     let mut event_pump = sdl.event_pump().unwrap();
-
     let vert_shader =
         render_gl::Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap())
             .unwrap();
-    println!("vert{}", vert_shader.id());
     let frag_shader =
         render_gl::Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap())
             .unwrap();
-
     let shader_program = render_gl::Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
-    println!("prog{}", shader_program.id());
     shader_program.set_used();
 
     let vertices: Vec<f32> = vec![
@@ -179,38 +173,27 @@ fn main() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
-
-        //test
-        let vec = glm::vec4(1.0, 0.0, 0.0, 1.0);
+        //manipulate trans
+        let vec = glm::vec4(0.0, 0.0, 0.0, 1.0);
         let trans = glm::identity();
         let trans = glm::translate(&trans, &glm::vec3(-0.5, 0.5, 0.0)); //translate
-                                                                        // let trans = glm::rotate(
-                                                                        //     &trans,
-                                                                        //     glm::radians(&glm::vec1(90.0))[0],
-                                                                        //     &glm::vec3(0.0, 0.0, 1.0),
-                                                                        // ); //rotate
-                                                                        // let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
-                                                                        // let res = trans * vec;
-
-        // print_mat4(trans);
-        // println!();
-        // print_vec4(res);
-
-        //end test
+        let trans = glm::rotate(
+            &trans,
+            glm::radians(&glm::vec1(45.0))[0],
+            &glm::vec3(0.0, 0.0, 1.0),
+        );
+        let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
 
         shader_program.set_used();
-        // passing matrix to shader leaving it for now
+
+        // pass uniform to shader
         unsafe {
-            let c_str = CString::new("transform").unwrap();
-            let transformLoc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            // println!("shader id{}", shader_program.id());
-            // println!("location{}", transformLoc);
-            // for item in glm::value_ptr(&trans) {
-            //     println!("item {}", item);
-            // }
-            gl::UniformMatrix4fv(transformLoc, 1, gl::FALSE, glm::value_ptr(&trans).as_ptr());
+            let c_str = CString::new("trans").unwrap();
+            let uniformLoc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
+            gl::UniformMatrix4fv(uniformLoc, 1, gl::FALSE, glm::value_ptr(&trans).as_ptr());
         }
 
+        // render triangles
         unsafe {
             gl::BindVertexArray(vao);
             gl::DrawArrays(
