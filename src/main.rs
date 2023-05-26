@@ -6,6 +6,8 @@ pub mod render_gl;
 // use libc::c_void;
 use std::ffi::CString;
 
+#[allow(non_snake_case)]
+
 // fn print_mat4(item: glm::Mat4) {
 //     for r in 0..4 {
 //         for c in 0..4 {
@@ -99,10 +101,10 @@ fn main() {
     unsafe {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(
-            gl::ARRAY_BUFFER,                                                       // target
-            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
-            gl::STATIC_DRAW,                               // usage
+            gl::ARRAY_BUFFER, // target
+            (cube_vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            cube_vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            gl::STATIC_DRAW,                                    // usage
         );
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
     }
@@ -184,13 +186,29 @@ fn main() {
         );
         let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
 
+        let width = 900;
+        let height = 700;
+        let Projection = glm::perspective(
+            glm::radians(&glm::vec1(45.0))[0],
+            width as f32 / height as f32,
+            0.1,
+            100.0,
+        );
+        let View = glm::look_at(
+            &glm::vec3(4.0, 3.0, 3.0), // Camera is at (4,3,3), in World Space
+            &glm::vec3(0.0, 0.0, 0.0), // and looks at the origin
+            &glm::vec3(0.0, 1.0, 0.0), // Head is up (set to 0,-1,0 to look upside-down)
+        );
+        let Model = trans;
+        let mvp = Projection * View * Model;
+
         shader_program.set_used();
 
         // pass uniform to shader
         unsafe {
-            let c_str = CString::new("trans").unwrap();
+            let c_str = CString::new("mvp").unwrap();
             let uniformLoc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            gl::UniformMatrix4fv(uniformLoc, 1, gl::FALSE, glm::value_ptr(&trans).as_ptr());
+            gl::UniformMatrix4fv(uniformLoc, 1, gl::FALSE, glm::value_ptr(&mvp).as_ptr());
         }
 
         // render triangles
@@ -199,7 +217,7 @@ fn main() {
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
                 0,             // starting index in the enabled arrays
-                3 * 2,         // number of indices to be rendered
+                3 * 12,        // number of indices to be rendered
             );
         }
 
