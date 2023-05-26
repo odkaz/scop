@@ -110,21 +110,21 @@ fn main() {
     }
 
     //cbuf
-    // let mut cbuf: gl::types::GLuint = 0;
-    // unsafe {
-    //     gl::GenBuffers(1, &mut cbuf);
-    // }
+    let mut cbuf: gl::types::GLuint = 0;
+    unsafe {
+        gl::GenBuffers(1, &mut cbuf);
+    }
 
-    // unsafe {
-    //     gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
-    //     gl::BufferData(
-    //         gl::ARRAY_BUFFER,                                                       // target
-    //         (cube_colors.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-    //         cube_colors.as_ptr() as *const gl::types::GLvoid, // pointer to data
-    //         gl::STATIC_DRAW,                               // usage
-    //     );
-    //     gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
-    // }
+    unsafe {
+        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,                                                          // target
+            (cube_colors.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            cube_colors.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            gl::STATIC_DRAW,                                  // usage
+        );
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+    }
     //cbuf end
 
     let mut vao: gl::types::GLuint = 0;
@@ -147,19 +147,19 @@ fn main() {
         );
 
         //color
-        // gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
-        // gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
-        // gl::VertexAttribPointer(
-        //     1,         // index of the generic vertex attribute ("layout (location = 0)")
-        //     3,         // the number of components per generic vertex attribute
-        //     gl::FLOAT, // data type
-        //     gl::FALSE, // normalized (int-to-float conversion)
-        //     (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-        //     std::ptr::null(), // offset of the first component
-        // );
+        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
+        gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
+        gl::VertexAttribPointer(
+            1,         // index of the generic vertex attribute ("layout (location = 0)")
+            3,         // the number of components per generic vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // normalized (int-to-float conversion)
+            (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+            std::ptr::null(),                                     // offset of the first component
+        );
 
-        // gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        // gl::BindVertexArray(0);
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        gl::BindVertexArray(0);
         //end
     }
 
@@ -173,7 +173,9 @@ fn main() {
         }
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl::Enable(gl::DEPTH_TEST);
+            gl::DepthFunc(gl::LESS);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
         //manipulate trans
         let vec = glm::vec4(0.0, 0.0, 0.0, 1.0);
