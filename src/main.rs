@@ -2,6 +2,10 @@ extern crate gl;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 pub mod render_gl;
+mod load_bmp;
+mod controls;
+use std::time::Duration;
+use std::time::Instant;
 
 // use libc::c_void;
 use std::ffi::CString;
@@ -45,8 +49,31 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
+    // let mut horizontalAngle = 0.0;
+    // let mut verticalAngle = 0.0;
+    // let mouseSpeed = 0.1;
+
+    // position
+    let position = glm::vec3( 0, 0, 5 );
+    // horizontal angle : toward -Z
+    let mut horizontalAngle = 3.14;
+    // vertical angle : 0, look at the horizon
+    let mut verticalAngle = 0.0;
+    // Initial Field of View
+    let mut initialFoV = 45.0;
+
+    let speed = 3.0; // 3 units / second
+    let mouseSpeed = 0.005;
+    let now = Instant::now();
+    let mut elapsed = now.elapsed();
+    let mut lastTime = elapsed.as_millis();
+
     //event
     let mut event_pump = sdl.event_pump().unwrap();
+
+
+
+    //shader
     let vert_shader =
         render_gl::Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap())
             .unwrap();
@@ -177,19 +204,60 @@ fn main() {
             gl::DepthFunc(gl::LESS);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
+
+        
+        // controls::test1();
+        // Compute the MVP matrix from keyboard and mouse input
+        // computeMatricesFromInputs();
+        // let ProjectionMatrix = getProjectionMatrix();
+        // let ViewMatrix = getViewMatrix();
+        // let ModelMatrix = glm::identity(); //needs check
+        // let MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+        //window
+        let (mut width, height) = window.size();
+        // println!("width{}", width);
+        // println!("height{}", height);
+
+
+        //mouse
+        let mut mouse = event_pump.mouse_state();
+        println!("x{}", mouse.x());
+        println!("y{}", mouse.y());
+
+        // let now = Instant::now();
+        elapsed = now.elapsed();
+        // let mut lastTime = elapsed.as_millis();
+        let currentTime = elapsed.as_millis();
+        let deltaTime = (currentTime - lastTime) as f32;
+        println!("delta{}", deltaTime);
+
+        lastTime = currentTime;
+        // horizontalAngle += mouseSpeed * deltaTime * (width / 2 - mouse.x() as u32) as f32;
+        // verticalAngle += mouseSpeed * deltaTime * (height / 2 - mouse.y() as u32) as f32;
+        horizontalAngle = mouse.x() as f32;
+        verticalAngle = mouse.y() as f32;
+        let direction = glm::vec3(
+            f32::cos(verticalAngle) * f32::sin(horizontalAngle),
+            f32::sin(verticalAngle),
+            f32::cos(verticalAngle) * f32::cos(horizontalAngle)
+        );
+
+
         //manipulate trans
         let vec = glm::vec4(0.0, 0.0, 0.0, 1.0);
         let trans = glm::identity();
         let trans = glm::translate(&trans, &glm::vec3(-0.5, 0.5, 0.0)); //translate
         let trans = glm::rotate(
             &trans,
-            glm::radians(&glm::vec1(45.0))[0],
-            &glm::vec3(0.0, 0.0, 1.0),
+            // glm::radians(&glm::vec1(0.0))[0],
+            (currentTime as f32) / 1000.0,
+            &glm::vec3(0.0, 1.0, 0.0),
         );
         let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
 
-        let width = 900;
-        let height = 700;
+        // let width = 900;
+        // let height = 700;
         let Projection = glm::perspective(
             glm::radians(&glm::vec1(45.0))[0],
             width as f32 / height as f32,
@@ -199,6 +267,7 @@ fn main() {
         let View = glm::look_at(
             &glm::vec3(4.0, 3.0, 3.0), // Camera is at (4,3,3), in World Space
             &glm::vec3(0.0, 0.0, 0.0), // and looks at the origin
+            // &direction,
             &glm::vec3(0.0, 1.0, 0.0), // Head is up (set to 0,-1,0 to look upside-down)
         );
         let Model = trans;
@@ -224,5 +293,6 @@ fn main() {
         }
 
         window.gl_swap_window();
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
