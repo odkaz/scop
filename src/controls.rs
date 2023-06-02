@@ -2,16 +2,11 @@ extern crate gl;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 
-pub fn getProjectionMatrix() {
+pub fn getProjectionMatrix() {}
 
-}
-
-pub fn computeMatricesFromInputs() {
-
-}
+pub fn computeMatricesFromInputs() {}
 
 pub fn getViewMatrix() {
-
 
     // let direction = glm::vec3(
     //     f32::cos(verticalAngle) * f32::sin(horizontalAngle),
@@ -29,7 +24,6 @@ pub fn getViewMatrix() {
 }
 
 pub fn test1() {
-
 
     // let mut xpos;
     // let mut ypos;

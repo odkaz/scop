@@ -1,14 +1,17 @@
 extern crate gl;
+extern crate image;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
-pub mod render_gl;
-mod load_bmp;
 mod controls;
+mod load_bmp;
+pub mod render_gl;
 use std::time::Duration;
 use std::time::Instant;
 
 // use libc::c_void;
 use std::ffi::CString;
+
+use std::ffi::c_void;
 
 #[allow(non_snake_case)]
 
@@ -49,12 +52,15 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
+    // let texture_img = load_bmp::load();
+    let texture = load_bmp::Bitmap::open(&String::from("resources/wall.bmp")).unwrap();
+    texture.print();
     // let mut horizontalAngle = 0.0;
     // let mut verticalAngle = 0.0;
     // let mouseSpeed = 0.1;
 
     // position
-    let position = glm::vec3( 0, 0, 5 );
+    let position = glm::vec3(0, 0, 5);
     // horizontal angle : toward -Z
     let mut horizontalAngle = 3.14;
     // vertical angle : 0, look at the horizon
@@ -72,8 +78,6 @@ fn main() {
 
     //event
     let mut event_pump = sdl.event_pump().unwrap();
-
-
 
     //shader
     let vert_shader =
@@ -120,6 +124,81 @@ fn main() {
         0.783, 0.290, 0.734, 0.722, 0.645, 0.174, 0.302, 0.455, 0.848, 0.225, 0.587, 0.040, 0.517,
         0.713, 0.338, 0.053, 0.959, 0.120, 0.393, 0.621, 0.362, 0.673, 0.211, 0.457, 0.820, 0.883,
         0.371, 0.982, 0.099, 0.879,
+    ];
+
+    let cube_textures: Vec<f32> = vec![
+        0.000059,
+        1.0 - 0.000004,
+        0.000103,
+        1.0 - 0.336048,
+        0.335973,
+        1.0 - 0.335903,
+        1.000023,
+        1.0 - 0.000013,
+        0.667979,
+        1.0 - 0.335851,
+        0.999958,
+        1.0 - 0.336064,
+        0.667979,
+        1.0 - 0.335851,
+        0.336024,
+        1.0 - 0.671877,
+        0.667969,
+        1.0 - 0.671889,
+        1.000023,
+        1.0 - 0.000013,
+        0.668104,
+        1.0 - 0.000013,
+        0.667979,
+        1.0 - 0.335851,
+        0.000059,
+        1.0 - 0.000004,
+        0.335973,
+        1.0 - 0.335903,
+        0.336098,
+        1.0 - 0.000071,
+        0.667979,
+        1.0 - 0.335851,
+        0.335973,
+        1.0 - 0.335903,
+        0.336024,
+        1.0 - 0.671877,
+        1.000004,
+        1.0 - 0.671847,
+        0.999958,
+        1.0 - 0.336064,
+        0.667979,
+        1.0 - 0.335851,
+        0.668104,
+        1.0 - 0.000013,
+        0.335973,
+        1.0 - 0.335903,
+        0.667979,
+        1.0 - 0.335851,
+        0.335973,
+        1.0 - 0.335903,
+        0.668104,
+        1.0 - 0.000013,
+        0.336098,
+        1.0 - 0.000071,
+        0.000103,
+        1.0 - 0.336048,
+        0.000004,
+        1.0 - 0.671870,
+        0.336024,
+        1.0 - 0.671877,
+        0.000103,
+        1.0 - 0.336048,
+        0.336024,
+        1.0 - 0.671877,
+        0.335973,
+        1.0 - 0.335903,
+        0.667969,
+        1.0 - 0.671889,
+        1.000004,
+        1.0 - 0.671847,
+        0.667979,
+        1.0 - 0.335851,
     ];
 
     let mut vbo: gl::types::GLuint = 0;
@@ -190,6 +269,22 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         gl::BindVertexArray(0);
         //end
+
+        //texture
+        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
+        gl::EnableVertexAttribArray(2); // this is "layout (location = 2)" in vertex shader
+        gl::VertexAttribPointer(
+            2,         // index of the generic vertex attribute ("layout (location = 2)")
+            2,         // the number of components per generic vertex attribute
+            gl::FLOAT, // data type
+            gl::FALSE, // normalized (int-to-float conversion)
+            (2 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+            std::ptr::null(),                                     // offset of the first component
+        );
+
+        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        gl::BindVertexArray(0);
+        //end
     }
 
     'main: loop {
@@ -207,7 +302,6 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        
         // controls::test1();
         // Compute the MVP matrix from keyboard and mouse input
         // computeMatricesFromInputs();
@@ -221,18 +315,17 @@ fn main() {
         // println!("width{}", width);
         // println!("height{}", height);
 
-
         //mouse
         let mut mouse = event_pump.mouse_state();
-        println!("x{}", mouse.x());
-        println!("y{}", mouse.y());
+        // println!("x{}", mouse.x());
+        // println!("y{}", mouse.y());
 
         // let now = Instant::now();
         elapsed = now.elapsed();
         // let mut lastTime = elapsed.as_millis();
         let currentTime = elapsed.as_millis();
         let deltaTime = (currentTime - lastTime) as f32;
-        println!("delta{}", deltaTime);
+        // println!("delta{}", deltaTime);
 
         lastTime = currentTime;
         horizontalAngle += mouseSpeed * deltaTime * (prevMouseX - mouse.x()) as f32;
@@ -244,9 +337,8 @@ fn main() {
         let direction = glm::vec3(
             f32::cos(verticalAngle) * f32::sin(horizontalAngle),
             f32::sin(verticalAngle),
-            f32::cos(verticalAngle) * f32::cos(horizontalAngle)
+            f32::cos(verticalAngle) * f32::cos(horizontalAngle),
         );
-
 
         //manipulate trans
         let vec = glm::vec4(0.0, 0.0, 0.0, 1.0);
@@ -258,7 +350,7 @@ fn main() {
             (currentTime as f32) / 1000.0,
             &glm::vec3(0.0, 1.0, 0.0),
         );
-        let trans = glm::scale(&trans, &glm::vec3(0.5, 0.5, 0.5)); //scale
+        let trans = glm::scale(&trans, &glm::vec3(1.0, 1.0, 1.0)); //scale
 
         let Projection = glm::perspective(
             glm::radians(&glm::vec1(45.0))[0],
@@ -271,8 +363,8 @@ fn main() {
         let View = glm::look_at(
             // &glm::vec3(4.0, 3.0, 3.0), // Camera is at (4,3,3), in World Space
             &cam_pos,
-            &(cam_pos + direction), // and looks at the origin
-            // &origin,
+            // &(cam_pos + direction), // and looks at the origin
+            &origin,
             &glm::vec3(0.0, 1.0, 0.0), // Head is up (set to 0,-1,0 to look upside-down)
         );
         let Model = trans;
@@ -285,6 +377,32 @@ fn main() {
             let c_str = CString::new("mvp").unwrap();
             let uniformLoc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
             gl::UniformMatrix4fv(uniformLoc, 1, gl::FALSE, glm::value_ptr(&mvp).as_ptr());
+        }
+
+        // Create one OpenGL texture
+        unsafe {
+            let mut textureID = 0;
+            gl::GenTextures(1, &mut textureID);
+
+            // "Bind" the newly created texture : all future texture functions will modify this texture
+            gl::BindTexture(gl::TEXTURE_2D, textureID);
+
+            let mut data = [(100, 0, 0); 512 * 512];
+            // Give the image to OpenGL
+            gl::TexImage2D(
+                gl::TEXTURE_2D,
+                0,
+                gl::RGB as i32,
+                512,
+                512,
+                0,
+                gl::BGR,
+                gl::UNSIGNED_BYTE,
+                &data[0] as *const _ as *const c_void,
+            );
+
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as i32);
         }
 
         // render triangles
