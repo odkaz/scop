@@ -4,6 +4,9 @@ use std::io::{self, BufRead, BufReader};
 
 pub struct Bitmap {
     path: String,
+    data: Vec<u8>,
+    width: u32,
+    height: u32,
 }
 
 impl Bitmap {
@@ -14,12 +17,13 @@ impl Bitmap {
     //     return img
     // }
 
+    pub fn get_data(&self) -> &Vec<u8> {
+        return &self.data
+    }
     pub fn read_file() {}
 
     pub fn open(path: &String) -> Result<Bitmap, io::Error> {
         let mut file = File::open(path)?;
-        // println!("{:?}", data);
-        // let mut reader = BufReader::new(file);
         let mut header_buf = [0; 54];
         file.read_exact(&mut header_buf);
         println!("{:?}", header_buf);
@@ -29,7 +33,6 @@ impl Bitmap {
         }
         let mut dataPos: u32 = 0;
         let mut imageSize: u32 = 0;
-        // let mut imageSize: u32 = u32::from_ne_bytes(header_buf[14..18].try_into().unwrap());
         let width: u32 = u32::from_ne_bytes(header_buf[18..22].try_into().unwrap());
         let height: u32 = u32::from_ne_bytes(header_buf[22..26].try_into().unwrap());
         println!("pos{}, size{}", dataPos, imageSize);
@@ -46,11 +49,14 @@ impl Bitmap {
 
         println!("w{}, h{}", width, height);
 
-        // let mut data = vec![];
-        // reader.read
+        let mut content = Vec::new();
+        file.read_to_end(&mut content);
 
         Ok(Bitmap {
             path: path.to_string(),
+            data: content,
+            width: width,
+            height: height,
         })
     }
 

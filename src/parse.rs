@@ -1,48 +1,48 @@
 use std::fs::File;
 use std::io::{ self, BufRead, BufReader};
-#[derive(Debug)]
-struct Point(f32, f32, f32);
-#[derive(Debug)]
-struct Face(Vec<i32>);
 
 fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
     let file = File::open(filename).unwrap();
     return io::BufReader::new(file).lines();
 }
 
-fn get_point(line: String) -> Point {
-    let mut tmp = Vec::new();
+fn get_point(line: String) -> Vec<f32> {
+    let mut point = Vec::new();
     for byte in line.split_whitespace() {
         let t: f32 = match byte.parse() {
             Ok(num) => num,
             Err(_) => continue,
         };
-        tmp.push(t);
+        point.push(t);
     }
-    Point(tmp[0], tmp[1], tmp[2])
+    point
 }
 
-fn get_face(line: String) -> Face {
-    let mut tmp = Vec::new();
+fn get_face(line: String) -> Vec<usize> {
+    let mut face = Vec::new();
     for byte in line.split_whitespace() {
-        let t: i32 = match byte.parse() {
+        let parts: Vec<&str> = byte.split("/").collect();
+        let t: usize = match parts[0].parse() {
             Ok(num) => num,
             Err(_) => continue,
         };
-        tmp.push(t);
+        face.push(t);
     }
-    Face(tmp)
+    face
 }
 
-fn main() {
-    let file_path = "./resources/42.obj";
+pub fn parse(file_path: &str) -> Vec<f32> {
+    // let file_path = "./resources/cube.obj";
     let mut points = Vec::new();
     let mut faces = Vec::new();
 
     let lines = read_lines(file_path.to_string());
     for line in lines {
         let str1 = line.unwrap();
-        let id = str1.chars().nth(0).unwrap();
+        let id = match str1.chars().nth(0) {
+            None => continue,
+            Some(c) => c,
+        };
 
         match id {
             'v' => {
@@ -56,6 +56,15 @@ fn main() {
             _ => (),
         }
     }
-    println!("{:#?}", points);
-    println!("{:#?}", faces);
+
+    let mut vertices = Vec::new();
+    for face in faces {
+        for f in face {
+            for point in &points[f - 1] {
+                vertices.push(*point);
+            }
+        }
+    }
+    println!("{:#?}", vertices);
+    return vertices
 }

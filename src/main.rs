@@ -1,35 +1,22 @@
 extern crate gl;
 extern crate image;
+use crate::image::EncodableLayout;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
 mod controls;
 mod load_bmp;
+mod parse;
 pub mod render_gl;
 use std::time::Duration;
 use std::time::Instant;
-
-// use libc::c_void;
 use std::ffi::CString;
-
 use std::ffi::c_void;
 
 #[allow(non_snake_case)]
 
-// fn print_mat4(item: glm::Mat4) {
-//     for r in 0..4 {
-//         for c in 0..4 {
-//             println!("{:?}", item[(r, c)]);
-//         }
-//     }
-// }
-
-// fn print_vec4(item: glm::Vec4) {
-//     for r in 0..4 {
-//         println!("{:?}", item[r]);
-//     }
-// }
-
 fn main() {
+    let vertices = parse::parse("resources/cube.obj");
+    println!("len{}", vertices.len() / 3);
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
     let gl_attr = video_subsystem.gl_attr();
@@ -52,12 +39,8 @@ fn main() {
         gl::ClearColor(0.3, 0.3, 0.5, 1.0);
     }
 
-    // let texture_img = load_bmp::load();
     let texture = load_bmp::Bitmap::open(&String::from("resources/wall.bmp")).unwrap();
     texture.print();
-    // let mut horizontalAngle = 0.0;
-    // let mut verticalAngle = 0.0;
-    // let mouseSpeed = 0.1;
 
     // position
     let position = glm::vec3(0, 0, 5);
@@ -89,117 +72,7 @@ fn main() {
     let shader_program = render_gl::Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
     shader_program.set_used();
 
-    let vertices: Vec<f32> = vec![
-        -0.5, -0.0, 0.0, 0.5, -0.0, 0.0, 0.0, 0.5, 0.0, -0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5,
-        0.0,
-    ];
 
-    let tri_vertices: Vec<f32> = vec![
-        // positions      // colors
-        0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
-        -0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
-        0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
-    ];
-
-    let cube_vertices: Vec<f32> = vec![
-        -1.0, -1.0, -1.0, // triangle 1 : begin
-        -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, // triangle 1 : end
-        1.0, 1.0, -1.0, // triangle 2 : begin
-        -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, // triangle 2 : end
-        1.0, -1.0, 1.0, -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, -1.0,
-        -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0,
-        1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-        -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
-        1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
-        1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
-    ];
-
-    let cube_colors: Vec<f32> = vec![
-        0.583, 0.771, 0.014, 0.609, 0.115, 0.436, 0.327, 0.483, 0.844, 0.822, 0.569, 0.201, 0.435,
-        0.602, 0.223, 0.310, 0.747, 0.185, 0.597, 0.770, 0.761, 0.559, 0.436, 0.730, 0.359, 0.583,
-        0.152, 0.483, 0.596, 0.789, 0.559, 0.861, 0.639, 0.195, 0.548, 0.859, 0.014, 0.184, 0.576,
-        0.771, 0.328, 0.970, 0.406, 0.615, 0.116, 0.676, 0.977, 0.133, 0.971, 0.572, 0.833, 0.140,
-        0.616, 0.489, 0.997, 0.513, 0.064, 0.945, 0.719, 0.592, 0.543, 0.021, 0.978, 0.279, 0.317,
-        0.505, 0.167, 0.620, 0.077, 0.347, 0.857, 0.137, 0.055, 0.953, 0.042, 0.714, 0.505, 0.345,
-        0.783, 0.290, 0.734, 0.722, 0.645, 0.174, 0.302, 0.455, 0.848, 0.225, 0.587, 0.040, 0.517,
-        0.713, 0.338, 0.053, 0.959, 0.120, 0.393, 0.621, 0.362, 0.673, 0.211, 0.457, 0.820, 0.883,
-        0.371, 0.982, 0.099, 0.879,
-    ];
-
-    let cube_textures: Vec<f32> = vec![
-        0.000059,
-        1.0 - 0.000004,
-        0.000103,
-        1.0 - 0.336048,
-        0.335973,
-        1.0 - 0.335903,
-        1.000023,
-        1.0 - 0.000013,
-        0.667979,
-        1.0 - 0.335851,
-        0.999958,
-        1.0 - 0.336064,
-        0.667979,
-        1.0 - 0.335851,
-        0.336024,
-        1.0 - 0.671877,
-        0.667969,
-        1.0 - 0.671889,
-        1.000023,
-        1.0 - 0.000013,
-        0.668104,
-        1.0 - 0.000013,
-        0.667979,
-        1.0 - 0.335851,
-        0.000059,
-        1.0 - 0.000004,
-        0.335973,
-        1.0 - 0.335903,
-        0.336098,
-        1.0 - 0.000071,
-        0.667979,
-        1.0 - 0.335851,
-        0.335973,
-        1.0 - 0.335903,
-        0.336024,
-        1.0 - 0.671877,
-        1.000004,
-        1.0 - 0.671847,
-        0.999958,
-        1.0 - 0.336064,
-        0.667979,
-        1.0 - 0.335851,
-        0.668104,
-        1.0 - 0.000013,
-        0.335973,
-        1.0 - 0.335903,
-        0.667979,
-        1.0 - 0.335851,
-        0.335973,
-        1.0 - 0.335903,
-        0.668104,
-        1.0 - 0.000013,
-        0.336098,
-        1.0 - 0.000071,
-        0.000103,
-        1.0 - 0.336048,
-        0.000004,
-        1.0 - 0.671870,
-        0.336024,
-        1.0 - 0.671877,
-        0.000103,
-        1.0 - 0.336048,
-        0.336024,
-        1.0 - 0.671877,
-        0.335973,
-        1.0 - 0.335903,
-        0.667969,
-        1.0 - 0.671889,
-        1.000004,
-        1.0 - 0.671847,
-        0.667979,
-        1.0 - 0.335851,
-    ];
 
     let mut vbo: gl::types::GLuint = 0;
     unsafe {
@@ -210,30 +83,49 @@ fn main() {
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
         gl::BufferData(
             gl::ARRAY_BUFFER, // target
-            (cube_vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-            cube_vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
+            (vertices.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+            vertices.as_ptr() as *const gl::types::GLvoid, // pointer to data
             gl::STATIC_DRAW,                                    // usage
         );
         gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
     }
 
     //cbuf
-    let mut cbuf: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenBuffers(1, &mut cbuf);
-    }
+    // let mut cbuf: gl::types::GLuint = 0;
+    // unsafe {
+    //     gl::GenBuffers(1, &mut cbuf);
+    // }
 
-    unsafe {
-        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
-        gl::BufferData(
-            gl::ARRAY_BUFFER,                                                          // target
-            (cube_colors.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
-            cube_colors.as_ptr() as *const gl::types::GLvoid, // pointer to data
-            gl::STATIC_DRAW,                                  // usage
-        );
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
-    }
+    // unsafe {
+    //     gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
+    //     gl::BufferData(
+    //         gl::ARRAY_BUFFER,                                                          // target
+    //         (cube_colors.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+    //         cube_colors.as_ptr() as *const gl::types::GLvoid, // pointer to data
+    //         gl::STATIC_DRAW,                                  // usage
+    //     );
+    //     gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+    // }
     //cbuf end
+
+
+    //uvbuf
+    // let mut uvbuf: gl::types::GLuint = 0;
+    // unsafe {
+    //     gl::GenBuffers(1, &mut uvbuf);
+    // }
+
+    // unsafe {
+    //     gl::BindBuffer(gl::ARRAY_BUFFER, uvbuf);
+    //     gl::BufferData(
+    //         gl::ARRAY_BUFFER,                                                          // target
+    //         (cube_textures.len() * std::mem::size_of::<f32>()) as gl::types::GLsizeiptr, // size of data in bytes
+    //         cube_textures.as_ptr() as *const gl::types::GLvoid, // pointer to data
+    //         gl::STATIC_DRAW,                                  // usage
+    //     );
+    //     gl::BindBuffer(gl::ARRAY_BUFFER, 0); // unbind the buffer
+    // }
+    //uvbuf end
 
     let mut vao: gl::types::GLuint = 0;
     unsafe {
@@ -255,35 +147,35 @@ fn main() {
         );
 
         //color
-        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
-        gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
-        gl::VertexAttribPointer(
-            1,         // index of the generic vertex attribute ("layout (location = 0)")
-            3,         // the number of components per generic vertex attribute
-            gl::FLOAT, // data type
-            gl::FALSE, // normalized (int-to-float conversion)
-            (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-            std::ptr::null(),                                     // offset of the first component
-        );
+        // gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
+        // gl::EnableVertexAttribArray(1); // this is "layout (location = 0)" in vertex shader
+        // gl::VertexAttribPointer(
+        //     1,         // index of the generic vertex attribute ("layout (location = 0)")
+        //     3,         // the number of components per generic vertex attribute
+        //     gl::FLOAT, // data type
+        //     gl::FALSE, // normalized (int-to-float conversion)
+        //     (3 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+        //     std::ptr::null(),                                     // offset of the first component
+        // );
 
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
+        // gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // gl::BindVertexArray(0);
         //end
 
         //texture
-        gl::BindBuffer(gl::ARRAY_BUFFER, cbuf);
-        gl::EnableVertexAttribArray(2); // this is "layout (location = 2)" in vertex shader
-        gl::VertexAttribPointer(
-            2,         // index of the generic vertex attribute ("layout (location = 2)")
-            2,         // the number of components per generic vertex attribute
-            gl::FLOAT, // data type
-            gl::FALSE, // normalized (int-to-float conversion)
-            (2 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
-            std::ptr::null(),                                     // offset of the first component
-        );
+        // gl::BindBuffer(gl::ARRAY_BUFFER, uvbuf);
+        // gl::EnableVertexAttribArray(2); // this is "layout (location = 2)" in vertex shader
+        // gl::VertexAttribPointer(
+        //     2,         // index of the generic vertex attribute ("layout (location = 2)")
+        //     2,         // the number of components per generic vertex attribute
+        //     gl::FLOAT, // data type
+        //     gl::FALSE, // normalized (int-to-float conversion)
+        //     (2 * std::mem::size_of::<f32>()) as gl::types::GLint, // stride (byte offset between consecutive attributes)
+        //     std::ptr::null(),                                     // offset of the first component
+        // );
 
-        gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        gl::BindVertexArray(0);
+        // gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // gl::BindVertexArray(0);
         //end
     }
 
@@ -332,8 +224,6 @@ fn main() {
         verticalAngle += mouseSpeed * deltaTime * (prevMouseY - mouse.y()) as f32;
         prevMouseX = mouse.x();
         prevMouseY = mouse.y();
-        // horizontalAngle = mouse.x() as f32;
-        // verticalAngle = mouse.y() as f32;
         let direction = glm::vec3(
             f32::cos(verticalAngle) * f32::sin(horizontalAngle),
             f32::sin(verticalAngle),
@@ -387,7 +277,10 @@ fn main() {
             // "Bind" the newly created texture : all future texture functions will modify this texture
             gl::BindTexture(gl::TEXTURE_2D, textureID);
 
-            let mut data = [(100, 0, 0); 512 * 512];
+            // let mut data = texture.get_data();
+            let mut data = image::open("resources/wall.bmp").unwrap().into_rgb8();
+            // let mut data = [(0, 100, 100); 512 * 512];
+            // println!("len{}", data.len());
             // Give the image to OpenGL
             gl::TexImage2D(
                 gl::TEXTURE_2D,
@@ -398,7 +291,8 @@ fn main() {
                 0,
                 gl::BGR,
                 gl::UNSIGNED_BYTE,
-                &data[0] as *const _ as *const c_void,
+                // &data[0] as *const _ as *const c_void,
+                data.as_bytes().as_ptr() as *const _,
             );
 
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as i32);
@@ -411,10 +305,10 @@ fn main() {
             gl::DrawArrays(
                 gl::TRIANGLES, // mode
                 0,             // starting index in the enabled arrays
-                3 * 12,        // number of indices to be rendered
+                // 3 * 12,        // number of indices to be rendered
+                (vertices.len() / 3) as i32,
             );
         }
-
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
