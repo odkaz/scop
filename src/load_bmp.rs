@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self};
 
 pub struct Bitmap {
     path: String,
@@ -26,8 +26,6 @@ impl Bitmap {
         let mut file = File::open(path)?;
         let mut header_buf = [0; 54];
         file.read_exact(&mut header_buf);
-        println!("{:?}", header_buf);
-        println!("0{}, 1{}", header_buf[0] as char, header_buf[1] as char);
         if header_buf[0] != 'B' as u8 || header_buf[1] != 'M' as u8 {
             panic!("The entered file does not have appropriate BMP header");
         }
@@ -35,20 +33,12 @@ impl Bitmap {
         let mut imageSize: u32 = 0;
         let width: u32 = u32::from_ne_bytes(header_buf[18..22].try_into().unwrap());
         let height: u32 = u32::from_ne_bytes(header_buf[22..26].try_into().unwrap());
-        println!("pos{}, size{}", dataPos, imageSize);
-        println!("0{}, 1{}", header_buf[18] as u32, header_buf[22] as u32);
-
-        println!("ans{}", width * height * 3);
         if dataPos == 0 {
             dataPos = 54;
         }
         if imageSize == 0 {
             imageSize = width * height * 3;
         }
-        println!("pos{}, size{}", dataPos, imageSize);
-
-        println!("w{}, h{}", width, height);
-
         let mut content = Vec::new();
         file.read_to_end(&mut content);
 
