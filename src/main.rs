@@ -12,6 +12,7 @@ mod texture;
 use buffer::Buffer;
 use render_gl::{Shader, Program};
 use std::ffi::CString;
+use std::time::Duration;
 
 const SCR_WIDTH: u32 = 800;
 const SCR_HEIGHT: u32 = 600;
@@ -93,9 +94,9 @@ fn main() {
                 _ => {}
             }
         }
-
+        let (w, h) = window.size();
         unsafe {
-            gl::Viewport(0, 0, SCR_WIDTH as i32, SCR_HEIGHT as i32);
+            gl::Viewport(0, 0, w as i32, h as i32);
             gl::ClearColor(0.3, 0.3, 0.5, 1.0);
         }
 
@@ -123,6 +124,6 @@ fn main() {
             );
         }
         window.gl_swap_window();
-        // ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
