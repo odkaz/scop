@@ -1,2 +1,3 @@
 /target
 /cpp_src
+/src/_*

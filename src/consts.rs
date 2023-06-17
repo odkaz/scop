@@ -1,17 +1,17 @@
-let vertices: Vec<f32> = vec![
+const vertices: Vec<f32> = vec![
     -0.5, -0.0, 0.0, 0.5, -0.0, 0.0, 0.0, 0.5, 0.0, -0.5, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, -0.5,
     0.0,
 ];
 
 
-let tri_vertices: Vec<f32> = vec![
+const tri_vertices: Vec<f32> = vec![
     // positions      // colors
     0.5, -0.5, 0.0, 1.0, 0.0, 0.0, // bottom right
     -0.5, -0.5, 0.0, 0.0, 1.0, 0.0, // bottom left
     0.0, 0.5, 0.0, 0.0, 0.0, 1.0, // top
 ];
 
-let cube_vertices: Vec<f32> = vec![
+const cube_vertices: Vec<f32> = vec![
     -1.0, -1.0, -1.0, // triangle 1 : begin
     -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, // triangle 1 : end
     1.0, 1.0, -1.0, // triangle 2 : begin
@@ -24,7 +24,7 @@ let cube_vertices: Vec<f32> = vec![
     1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
 ];
 
-let cube_colors: Vec<f32> = vec![
+pub const cube_colors: Vec<f32> = vec![
     0.583, 0.771, 0.014, 0.609, 0.115, 0.436, 0.327, 0.483, 0.844, 0.822, 0.569, 0.201, 0.435,
     0.602, 0.223, 0.310, 0.747, 0.185, 0.597, 0.770, 0.761, 0.559, 0.436, 0.730, 0.359, 0.583,
     0.152, 0.483, 0.596, 0.789, 0.559, 0.861, 0.639, 0.195, 0.548, 0.859, 0.014, 0.184, 0.576,
@@ -36,13 +36,13 @@ let cube_colors: Vec<f32> = vec![
     0.371, 0.982, 0.099, 0.879,
 ];
 
-let textures: Vec<f32> = vec![
+const textures: Vec<f32> = vec![
     0.0, 0.0,  // lower-left corner  
     1.0, 0.0,  // lower-right corner
     0.5, 1.0   // top-center corner
 ];
 
-let cube_textures: Vec<f32> = vec![
+const cube_textures: Vec<f32> = vec![
     0.000059,
     1.0 - 0.000004,
     0.000103,

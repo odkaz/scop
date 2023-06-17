@@ -32,7 +32,6 @@ fn get_face(line: String) -> Vec<usize> {
 }
 
 pub fn parse(file_path: &str) -> Vec<f32> {
-    // let file_path = "./resources/cube.obj";
     let mut points = Vec::new();
     let mut faces = Vec::new();
 
@@ -65,6 +64,5 @@ pub fn parse(file_path: &str) -> Vec<f32> {
             }
         }
     }
-    println!("{:#?}", vertices);
     return vertices
 }
