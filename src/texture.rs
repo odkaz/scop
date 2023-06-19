@@ -1,6 +1,5 @@
 use gl;
 extern crate image;
-use image::GenericImageView;
 use std::path::Path;
 use std::ffi::c_void;
 
