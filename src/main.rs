@@ -16,6 +16,8 @@ use mvp::get_mvp;
 use render_gl::{Shader, Program};
 use std::ffi::CString;
 use std::time::Duration;
+use sdl2::keyboard::Keycode;
+use sdl2::event::Event;
 
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
@@ -91,14 +93,8 @@ fn main() {
     shader_program.set_used();
     let (vertices, vao) = load_buf();
 
-    'main: loop {
-        //event handler
-        for event in event_pump.poll_iter() {
-            match event {
-                sdl2::event::Event::Quit { .. } => break 'main,
-                _ => {}
-            }
-        }
+    while process_events(&mut event_pump) {
+
         let (w, h) = window.size();
         unsafe {
             gl::Viewport(0, 0, w as i32, h as i32);
@@ -130,4 +126,29 @@ fn main() {
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
+}
+
+fn process_events(event_pump: &mut sdl2::EventPump) -> bool {
+    for event in event_pump.poll_iter() {
+        match event {
+            sdl2::event::Event::Quit { .. } |
+            Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                return false
+            },
+            Event::KeyDown { keycode: Some(Keycode::W), .. } => {
+                println!("w");
+            },
+            Event::KeyDown { keycode: Some(Keycode::A), .. } => {
+                println!("a");
+            },
+            Event::KeyDown { keycode: Some(Keycode::S), .. } => {
+                println!("s");
+            },
+            Event::KeyDown { keycode: Some(Keycode::D), .. } => {
+                println!("d");
+            },
+            _ => {}
+        }
+    }
+    return true
 }

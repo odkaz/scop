@@ -55,13 +55,10 @@ pub fn parse(file_path: &str) -> Vec<f32> {
             _ => (),
         }
     }
-    println!("p{:?}", points);
-    println!("f{:?}", faces);
 
     let mut vertices = Vec::new();
     for face in faces {
         for f in face {
-            println!("m{}", f);
             for point in &points[f - 1] {
                 vertices.push(*point);
             }

@@ -24,11 +24,11 @@ pub fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVec
 pub fn look_at() -> Matrix<f32> {
     let cameraPos = TVector3::from([5., 0., 5.]);
     let cameraTarget = TVector3::from([0., 0., 0.]);
-    let cameraDirection = (cameraPos - cameraTarget).normalize();
+    let cameraDirection = (cameraPos - cameraTarget.clone()).normalize();
     let up = TVector3::from([0., 1., 0.]);
     let cameraRight = Vector::cross_product(&up, &cameraDirection).normalize();
     let cameraUp = Vector::cross_product(&cameraDirection, &cameraRight);
-    view_matrix(cameraRight, cameraUp, cameraDirection, TVector3::from([0., 0., 0.]))
+    view_matrix(cameraRight, cameraUp, cameraDirection, cameraTarget)
 }
 
 pub fn get_mvp() -> Matrix<f32>{

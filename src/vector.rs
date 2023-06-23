@@ -8,17 +8,15 @@ pub type TVector2<T> = TVector<T, 2>;
 pub type TVector3<T> = TVector<T, 3>;
 pub type TVector4<T> = TVector<T, 4>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vector<T, const R: usize> {
     data: Vec<T>,
-    len: usize,
 }
 
 impl<T, const N: usize> From<[T; N]> for Vector<T, N> {
     fn from(s: [T; N]) -> Vector<T, N> {
         let d = Vec::from(s);
-        let l = d.len();
-        return Vector { data: d, len: l };
+        return Vector { data: d };
     }
 }
 
@@ -93,7 +91,7 @@ impl<T: Mul<Output = T> + Clone + Copy, const N: usize> Vector<T, N> {
 impl<T: Display, const N: usize> Display for Vector<T, N> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "[").unwrap();
-        for i in 0..self.len {
+        for i in 0..N {
             if i != 0 {
                 write!(f, ", ").unwrap();
             }
@@ -115,12 +113,11 @@ impl<T: Clone + Add<Output = T>, const N: usize> Add<Vector<T, N>> for Vector<T,
     type Output = Vector<T, N>;
     fn add(self, rhs: Vector<T, N>) -> Vector<T, N> {
         let mut res = Vec::new();
-        for i in 0..self.len {
+        for i in 0..N {
             res.push(self.data[i].clone() + rhs.data[i].clone());
         }
         Vector {
             data: res,
-            len: self.len,
         }
     }
 }
@@ -141,7 +138,7 @@ impl<T, const N: usize> Vector<T, N> {
 impl<T: Float, const N: usize> Vector<T, N> {
     pub fn abs (&self) -> T {
         let mut total = T::zero();
-        for i in 0..self.data.len() {
+        for i in 0..N {
             total = total + (self.data[i] * self.data[i]);
         }
         total.sqrt()
@@ -151,7 +148,7 @@ impl<T: Float, const N: usize> Vector<T, N> {
 impl<T: Float, const N: usize> Vector<T, N> {
     pub fn normalize (&self) -> Vector<T, N> {
         let mut total = T::zero();
-        for i in 0..self.data.len() {
+        for i in 0..N {
             total = total + (self.data[i] * self.data[i]);
         }
         let sq = total.sqrt();
@@ -161,7 +158,6 @@ impl<T: Float, const N: usize> Vector<T, N> {
         }
         Vector {
             data: res.clone(),
-            len: res.len(),
         }
     }
 }
