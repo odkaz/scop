@@ -31,7 +31,7 @@ const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
 
 fn load_buf() -> (Vec<f32>, gl::types::GLuint) {
-    let vertices = parse::parse("resources/teapot.obj");
+    let vertices = parse::parse("resources/square.obj");
 
     let vertex_buf = Buffer::new();
     vertex_buf.bind(&vertices);
@@ -102,7 +102,7 @@ fn main() {
     let (vertices, vao) = load_buf();
 
     let mut camera = Camera::new(
-        TVector3::from([5., 0., 5.]),
+        TVector3::from([0., 0., 0.1]),
         TVector3::from([0., 0., 0.]),
         TVector3::from([0., 1., 0.]),
     );
@@ -124,7 +124,7 @@ fn main() {
         unsafe {
             let c_str = CString::new("mvp").unwrap();
             let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            gl::UniformMatrix4fv(uniform_loc, 1, gl::FALSE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
+            gl::UniformMatrix4fv(uniform_loc, 1, gl::TRUE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
         }
 
         // render triangles
@@ -149,23 +149,19 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera<f32>) ->
                 return false
             },
             Event::KeyDown { keycode: Some(Keycode::W), .. } => {
-                camera.move_forward(1.);
-                // println!("pos {}", camera.get_pos());
+                camera.move_forward(0.1);
 
             },
             Event::KeyDown { keycode: Some(Keycode::A), .. } => {
-                camera.move_right(-1.);
-                // println!("pos {}", camera.get_pos());
+                camera.move_right(-0.1);
 
             },
             Event::KeyDown { keycode: Some(Keycode::S), .. } => {
-                camera.move_forward(-1.);
-                // println!("pos {}", camera.get_pos());
+                camera.move_forward(-0.1);
 
             },
             Event::KeyDown { keycode: Some(Keycode::D), .. } => {
-                camera.move_right(1.);
-                // println!("pos {}", camera.get_pos());
+                camera.move_right(0.1);
 
             },
             _ => {}

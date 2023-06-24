@@ -1,7 +1,7 @@
 extern crate num;
 
 use crate::vector::{Vector, TVector3};
-use crate::matrix::Matrix;
+use crate::matrix::{Matrix, TMatrix4};
 use num::{Float, Zero};
 
 #[derive(Debug, Clone)]
@@ -30,13 +30,11 @@ impl Camera<f32> {
     pub fn move_forward(&mut self, scale: f32) {
         let mut buf = self.dir.clone();
         buf.scl(scale);
-        println!("f{}", buf);
         self.pos = self.pos.clone() + buf;
     }
     pub fn move_right(&mut self, scale: f32) {
         let mut buf = self.right.clone();
         buf.scl(scale);
-        println!("r{}", buf);
         self.pos = self.pos.clone() + buf;
     }
 }
@@ -60,7 +58,7 @@ impl Camera<f32> {
 }
 
 impl Camera<f32> {
-    fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVector3<f32>) -> Matrix<f32> {
+    fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVector3<f32>) -> TMatrix4<f32> {
         let lhs = Matrix::from([
             [r[0], r[1], r[2], 0.],
             [u[0], u[1], u[2], 0.],
@@ -76,7 +74,7 @@ impl Camera<f32> {
         lhs * rhs
     }
 
-    pub fn look_at(&mut self) -> Matrix<f32> {
+    pub fn look_at(&mut self) -> TMatrix4<f32> {
         // self.dir = (self.pos.clone() - self.dir.clone()).normalize();
         self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
         self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
