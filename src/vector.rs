@@ -77,6 +77,19 @@ impl<T: Default + Sub<Output = T> + Copy, const N: usize> Sub<Vector<T, N>> for 
     }
 }
 
+impl<T: Default + Sub<Output = T> + Copy, const N: usize> Sub<&Vector<T, N>> for &Vector<T, N> {
+    type Output = Vector<T, N>;
+    fn sub(self, rhs: &Vector<T, N>) -> Vector<T, N> {
+        let mut res = [Default::default(); N];
+        let l = self.as_slice();
+        let r = rhs.as_slice();
+        for i in 0..N {
+            res[i] = l[i] - r[i];
+        }
+        Vector::from(res)    
+    }
+}
+
 impl<T: Mul<Output = T> + Clone + Copy, const N: usize> Vector<T, N> {
     pub fn scl(&mut self, a: T) {
         let it = self.data.iter();

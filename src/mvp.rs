@@ -2,6 +2,7 @@ extern crate nalgebra_glm as glm;
 
 use crate::matrix::Matrix;
 use crate::vector::{Vector, TVector3};
+use crate::camera::Camera;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 
@@ -21,17 +22,14 @@ pub fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVec
     lhs * rhs
 }
 
-pub fn look_at() -> Matrix<f32> {
-    let cameraPos = TVector3::from([5., 0., 5.]);
-    let cameraTarget = TVector3::from([0., 0., 0.]);
-    let cameraDirection = (cameraPos - cameraTarget.clone()).normalize();
-    let up = TVector3::from([0., 1., 0.]);
+pub fn look_at(position: &TVector3<f32>, target: &TVector3<f32>, up: &TVector3<f32>) -> Matrix<f32> {
+    let cameraDirection = (position - target).normalize();
     let cameraRight = Vector::cross_product(&up, &cameraDirection).normalize();
     let cameraUp = Vector::cross_product(&cameraDirection, &cameraRight);
-    view_matrix(cameraRight, cameraUp, cameraDirection, cameraTarget)
+    view_matrix(cameraRight, cameraUp, cameraDirection, target.clone())
 }
 
-pub fn get_mvp() -> Matrix<f32>{
+pub fn get_mvp(camera: &mut Camera<f32>) -> Matrix<f32>{
     let start = SystemTime::now();
     let since_the_epoch = start
         .duration_since(UNIX_EPOCH)
@@ -40,6 +38,12 @@ pub fn get_mvp() -> Matrix<f32>{
     let mut trans = Matrix::translation(0., 0., 0.);
     let mut scale = Matrix::scale(0.1, 0.1, 0.1);
     let mut rot = Matrix::rotation(0., since_the_epoch as f32, 0.);
-    let mut view = look_at();
+    let mut view = look_at(
+        camera.get_pos(),
+        camera.get_target(),
+        camera.get_up()
+    );
+    // let mut view = camera.look_at();
+    // view.out();
     return view * trans * scale
 }

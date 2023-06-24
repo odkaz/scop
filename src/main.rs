@@ -2,6 +2,7 @@ extern crate gl;
 extern crate image;
 extern crate nalgebra_glm as glm;
 extern crate sdl2;
+extern crate num;
 
 pub mod buffer;
 mod parse;
@@ -10,14 +11,21 @@ pub mod render_gl;
 pub mod matrix;
 pub mod vector;
 mod texture;
+pub mod camera;
+
+// use crate::vector::{Vector, TVector3};
 
 use buffer::Buffer;
 use mvp::get_mvp;
 use render_gl::{Shader, Program};
+use vector::TVector3;
 use std::ffi::CString;
 use std::time::Duration;
 use sdl2::keyboard::Keycode;
 use sdl2::event::Event;
+use num::{Float};
+use camera::Camera;
+
 
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
@@ -93,7 +101,13 @@ fn main() {
     shader_program.set_used();
     let (vertices, vao) = load_buf();
 
-    while process_events(&mut event_pump) {
+    let mut camera = Camera::new(
+        TVector3::from([5., 0., 5.]),
+        TVector3::from([0., 0., 0.]),
+        TVector3::from([0., 1., 0.]),
+    );
+    println!("{:?}", camera);
+    while process_events(&mut event_pump, &mut camera) {
 
         let (w, h) = window.size();
         unsafe {
@@ -106,12 +120,11 @@ fn main() {
         shader_program.set_used();
 
         // pass uniform to shader
-        let mvp = get_mvp();
-        let m = matrix::identity_array().as_mut_ptr();
+        let mvp = get_mvp(&mut camera);
         unsafe {
             let c_str = CString::new("mvp").unwrap();
-            let uniformLoc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            gl::UniformMatrix4fv(uniformLoc, 1, gl::FALSE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
+            let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
+            gl::UniformMatrix4fv(uniform_loc, 1, gl::FALSE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
         }
 
         // render triangles
@@ -128,7 +141,7 @@ fn main() {
     }
 }
 
-fn process_events(event_pump: &mut sdl2::EventPump) -> bool {
+fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera<f32>) -> bool {
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. } |
@@ -136,16 +149,24 @@ fn process_events(event_pump: &mut sdl2::EventPump) -> bool {
                 return false
             },
             Event::KeyDown { keycode: Some(Keycode::W), .. } => {
-                println!("w");
+                camera.move_forward(1.);
+                // println!("pos {}", camera.get_pos());
+
             },
             Event::KeyDown { keycode: Some(Keycode::A), .. } => {
-                println!("a");
+                camera.move_right(-1.);
+                // println!("pos {}", camera.get_pos());
+
             },
             Event::KeyDown { keycode: Some(Keycode::S), .. } => {
-                println!("s");
+                camera.move_forward(-1.);
+                // println!("pos {}", camera.get_pos());
+
             },
             Event::KeyDown { keycode: Some(Keycode::D), .. } => {
-                println!("d");
+                camera.move_right(1.);
+                // println!("pos {}", camera.get_pos());
+
             },
             _ => {}
         }
