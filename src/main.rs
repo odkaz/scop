@@ -14,7 +14,7 @@ mod texture;
 pub mod camera;
 
 // use crate::vector::{Vector, TVector3};
-
+use matrix::Matrix;
 use buffer::Buffer;
 use mvp::get_mvp;
 use render_gl::{Shader, Program};
@@ -31,8 +31,7 @@ const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
 
 fn load_buf() -> (Vec<f32>, gl::types::GLuint) {
-    let vertices = parse::parse("resources/square.obj");
-
+    let vertices = parse::parse("resources/teapot.obj");
     let vertex_buf = Buffer::new();
     vertex_buf.bind(&vertices);
 
@@ -102,11 +101,10 @@ fn main() {
     let (vertices, vao) = load_buf();
 
     let mut camera = Camera::new(
-        TVector3::from([0., 0., 0.1]),
+        TVector3::from([0., 0., 10.]),
         TVector3::from([0., 0., 0.]),
         TVector3::from([0., 1., 0.]),
     );
-    println!("{:?}", camera);
     while process_events(&mut event_pump, &mut camera) {
 
         let (w, h) = window.size();
@@ -121,6 +119,7 @@ fn main() {
 
         // pass uniform to shader
         let mvp = get_mvp(&mut camera);
+
         unsafe {
             let c_str = CString::new("mvp").unwrap();
             let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
