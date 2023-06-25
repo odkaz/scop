@@ -5,16 +5,16 @@ use crate::matrix::{Matrix, TMatrix4};
 use num::{Float, Zero};
 
 #[derive(Debug, Clone)]
-pub struct Camera<T> {
-    pos: TVector3<T>,
-    target: TVector3<T>,
-    dir: TVector3<T>,
-    right: TVector3<T>,
-    up: TVector3<T>
+pub struct Camera {
+    pos: TVector3<f32>,
+    target: TVector3<f32>,
+    dir: TVector3<f32>,
+    right: TVector3<f32>,
+    up: TVector3<f32>
 }
 
-impl Camera<f32> {
-    pub fn new(position: TVector3<f32>, target: TVector3<f32>, up: TVector3<f32>) -> Camera<f32> {
+impl Camera {
+    pub fn new(position: TVector3<f32>, target: TVector3<f32>, up: TVector3<f32>) -> Camera {
         let direction = (target.clone() - position.clone()).normalize();
         Camera {
             pos: position.clone(),
@@ -26,7 +26,7 @@ impl Camera<f32> {
     }
 }
 
-impl Camera<f32> {
+impl Camera {
     pub fn move_forward(&mut self, scale: f32) {
         let mut buf = self.dir.clone();
         buf.scl(scale);
@@ -39,7 +39,7 @@ impl Camera<f32> {
     }
 }
 
-impl Camera<f32> {
+impl Camera {
     pub fn get_pos(&self) -> &TVector3<f32> {
         &self.pos
     }
@@ -57,7 +57,7 @@ impl Camera<f32> {
     }
 }
 
-impl Camera<f32> {
+impl Camera {
     fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVector3<f32>) -> TMatrix4<f32> {
         let lhs = Matrix::from([
             [r[0], r[1], r[2], 0.],

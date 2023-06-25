@@ -140,7 +140,7 @@ fn main() {
     }
 }
 
-fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera<f32>) -> bool {
+fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool {
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. } |

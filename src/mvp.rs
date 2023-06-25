@@ -51,7 +51,7 @@ pub fn look_at(position: &TVector3<f32>, target: &TVector3<f32>, up: &TVector3<f
     view_matrix(cameraRight, cameraUp, cameraDirection, position.clone())
 }
 
-pub fn get_mvp(camera: &mut Camera<f32>) -> TMatrix4<f32>{
+pub fn get_mvp(camera: &mut Camera) -> TMatrix4<f32>{
     let start = SystemTime::now();
     let since_the_epoch = (start
         .duration_since(UNIX_EPOCH)
@@ -62,12 +62,6 @@ pub fn get_mvp(camera: &mut Camera<f32>) -> TMatrix4<f32>{
     let mut scale = Matrix::scale(1., 1., 1.);
     let mut rot = Matrix::rotation(0., since_the_epoch as f32, 0.);
     let mut view = camera.look_at();
-    // let mut view = look_at(
-    //     &Vector::from([1., 0., 0.]),
-    //     &Vector::from([0., 0., 0.]),
-    //     &Vector::from([0., 1., 0.]),
-    // );
-    // view.out();
     let mut per = projection();
     return per * view * trans * rot * scale
 }
