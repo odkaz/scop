@@ -12,6 +12,7 @@ pub mod matrix;
 pub mod vector;
 mod texture;
 pub mod camera;
+mod macros;
 
 // use crate::vector::{Vector, TVector3};
 use matrix::Matrix;
@@ -19,7 +20,7 @@ use buffer::Buffer;
 use mvp::get_mvp;
 use render_gl::{Shader, Program};
 use vector::TVector3;
-use std::ffi::CString;
+use std::ffi::{CString, CStr};
 use std::time::Duration;
 use sdl2::keyboard::Keycode;
 use sdl2::event::Event;
@@ -121,20 +122,14 @@ fn main() {
         let mvp = get_mvp(&mut camera);
 
         unsafe {
-            let c_str = CString::new("mvp").unwrap();
-            let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            gl::UniformMatrix4fv(uniform_loc, 1, gl::TRUE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
+            shader_program.setMat4(c_str!("mvp"), &mvp);
+            gl::BindVertexArray(vao);
+            gl::DrawArrays(gl::TRIANGLES,0, (vertices.len() / 3) as i32);
+            // let c_str = CString::new("mvp").unwrap();
+            // let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
+            // gl::UniformMatrix4fv(uniform_loc, 1, gl::TRUE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
         }
 
-        // render triangles
-        unsafe {
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(
-                gl::TRIANGLES, // mode
-                0,             // starting index in the enabled arrays
-                (vertices.len() / 3) as i32,// number of indices to be rendered
-            );
-        }
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }

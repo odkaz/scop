@@ -1,6 +1,7 @@
 use gl;
 use std;
 use std::ffi::{CStr, CString};
+use crate::matrix::{TMatrix4};
 
 pub struct Program {
     id: gl::types::GLuint,
@@ -39,6 +40,9 @@ impl Program {
         unsafe {
             gl::UseProgram(self.id);
         }
+    }
+    pub unsafe fn setMat4(&self, name: &CStr, mat: &TMatrix4<f32>) {
+        gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, name.as_ptr()), 1, gl::TRUE, mat.as_mut_arr().as_mut_ptr() as * const f32);
     }
 }
 
