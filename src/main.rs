@@ -125,9 +125,6 @@ fn main() {
             shader_program.setMat4(c_str!("mvp"), &mvp);
             gl::BindVertexArray(vao);
             gl::DrawArrays(gl::TRIANGLES,0, (vertices.len() / 3) as i32);
-            // let c_str = CString::new("mvp").unwrap();
-            // let uniform_loc = gl::GetUniformLocation(shader_program.id(), c_str.as_ptr());
-            // gl::UniformMatrix4fv(uniform_loc, 1, gl::TRUE, mvp.as_mut_arr().as_mut_ptr() as * const f32);
         }
 
         window.gl_swap_window();
