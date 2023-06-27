@@ -118,6 +118,11 @@ pub fn identity_array() -> [[f32; 4]; 4] {
 }
 
 impl TMatrix4<f32> {
+    pub fn identity() -> TMatrix4<f32> {
+        let mut trans:[[f32; 4]; 4] = identity_array();
+        Matrix::from(trans)
+    }
+
     pub fn translation(x: f32, y: f32, z:f32) -> TMatrix4<f32> {
         let mut trans:[[f32; 4]; 4] = identity_array();
         trans[0][3] = x;

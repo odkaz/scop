@@ -13,12 +13,15 @@ pub mod vector;
 mod texture;
 pub mod camera;
 mod macros;
+pub mod model;
 
 // use crate::vector::{Vector, TVector3};
 use matrix::Matrix;
 use buffer::Buffer;
 use mvp::get_mvp;
 use render_gl::{Shader, Program};
+// pub mod shader;
+// use shader::Shader;
 use vector::TVector3;
 use std::ffi::{CString, CStr};
 use std::time::Duration;
@@ -26,48 +29,52 @@ use sdl2::keyboard::Keycode;
 use sdl2::event::Event;
 use num::{Float};
 use camera::Camera;
-
+use model::Model;
+use std::ptr;
+use std::mem;
+use std::os::raw::c_void;
+use self::gl::types::*;
 
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
 
-fn load_buf() -> (Vec<f32>, gl::types::GLuint) {
-    let vertices = parse::parse("resources/teapot.obj");
-    let vertex_buf = Buffer::new();
-    vertex_buf.bind(&vertices);
+// fn load_buf() -> (Vec<f32>, gl::types::GLuint) {
+//     let vertices = parse::parse("resources/obj/teapot.obj");
+//     let vertex_buf = Buffer::new();
+//     vertex_buf.bind(&vertices);
 
-    let mut vao: gl::types::GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-        vertex_buf.enable();
-    }
-    let colors: [f32; 9] = [
-        1., 0.5, 0.0, // left
-        0.5, 0.5, 0.0, // right
-        0.5,  0.5, 0.0  // top
-    ];
-    let color_buf = Buffer::new();
-    color_buf.bind(&Vec::from(colors));
-    color_buf.enable();
-    let textures: [f32; 12] = [
-        1.0, 1.0,
-        1.0, 0.0,
-        0.0, 1.0,
-        1.0, 0.0,
-        0.0, 0.0,
-        0.0, 1.0
-    ];
-    // let text_buf = Buffer::new();
-    // text_buf.bind(&Vec::from(textures));
-    // text_buf.enable_texture();
-    // texture::texture();
+//     let mut vao: gl::types::GLuint = 0;
+//     unsafe {
+//         gl::GenVertexArrays(1, &mut vao);
+//         gl::BindVertexArray(vao);
+//         vertex_buf.enable();
+//     }
+//     let colors: [f32; 9] = [
+//         1., 0.5, 0.0, // left
+//         0.5, 0.5, 0.0, // right
+//         0.5,  0.5, 0.0  // top
+//     ];
+//     let color_buf = Buffer::new();
+//     color_buf.bind(&Vec::from(colors));
+//     color_buf.enable();
+//     let textures: [f32; 12] = [
+//         1.0, 1.0,
+//         1.0, 0.0,
+//         0.0, 1.0,
+//         1.0, 0.0,
+//         0.0, 0.0,
+//         0.0, 1.0
+//     ];
+//     // let text_buf = Buffer::new();
+//     // text_buf.bind(&Vec::from(textures));
+//     // text_buf.enable_texture();
+//     // texture::texture();
 
-    unsafe {
-        gl::BindVertexArray(0); // Call this when all the bindings are done
-    }
-    (vertices, vao)
-}
+//     unsafe {
+//         gl::BindVertexArray(0); // Call this when all the bindings are done
+//     }
+//     (vertices, vao)
+// }
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -90,7 +97,8 @@ fn main() {
     //event
     let mut event_pump = sdl.event_pump().unwrap();
 
-    //shader
+
+    // //shader
     let vert_shader =
         Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap())
             .unwrap();
@@ -99,7 +107,12 @@ fn main() {
             .unwrap();
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
     shader_program.set_used();
-    let (vertices, vao) = load_buf();
+    // let (vertices, vao) = load_buf();
+    let mut models: Vec<Model> = Vec::new();
+    models.push(Model::new("resources/obj/cube.obj"));
+    models.push(Model::new("resources/obj/teapot.obj"));
+    models.push(Model::new("resources/obj/teapot.obj"));
+
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
@@ -117,15 +130,31 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
         shader_program.set_used();
-
-        // pass uniform to shader
-        let mvp = get_mvp(&mut camera);
-
         unsafe {
-            shader_program.setMat4(c_str!("mvp"), &mvp);
-            gl::BindVertexArray(vao);
-            gl::DrawArrays(gl::TRIANGLES,0, (vertices.len() / 3) as i32);
+            shader_program.setMat4(c_str!("view"), &camera.look_at());
+            shader_program.setMat4(c_str!("projection"), &mvp::projection());    
         }
+
+
+        for (i, m) in models.iter_mut().enumerate() {
+            unsafe {
+                m.set_trans(i as f32, i as f32, i as f32);
+                m.set_scale(0.2, 0.2, 0.2);
+                shader_program.setMat4(c_str!("model"), &m.get_model());
+                gl::BindVertexArray(m.get_vao());
+                gl::DrawArrays(gl::TRIANGLES,0, (m.get_vertices().len() / 3) as i32);
+            }
+        }
+
+
+        // // pass uniform to shader
+        // let mvp = get_mvp(&mut camera);
+
+        // unsafe {
+        //     shader_program.setMat4(c_str!("mvp"), &mvp);
+        //     gl::BindVertexArray(vao);
+        //     gl::DrawArrays(gl::TRIANGLES,0, (vertices.len() / 3) as i32);
+        // }
 
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));

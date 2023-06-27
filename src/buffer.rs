@@ -8,13 +8,13 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new() -> Buffer {
+    pub fn new(buf_loc: u32) -> Buffer {
         let mut vbo: GLuint = 0;
         unsafe {
             gl::GenBuffers(1, &mut vbo);
             let buf = Buffer {
                 _vbo: vbo,
-                _loc: LOC,
+                _loc: buf_loc,
             };
             LOC = LOC + 1;
             return buf
