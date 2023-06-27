@@ -49,8 +49,13 @@ pub fn parse(file_path: &str) -> Vec<f32> {
                 points.push(p);
             },
             'f' => {
-                let f = get_face(str1);
-                faces.push(f);
+                let mut f = get_face(str1);
+                if f.len() == 3 {
+                    faces.push(f);
+                } else if f.len() == 4 {
+                    faces.push(Vec::from([f[0], f[1], f[2]]));
+                    faces.push(Vec::from([f[0], f[2], f[3]]));
+                }
             },
             _ => (),
         }

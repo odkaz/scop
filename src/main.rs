@@ -109,9 +109,7 @@ fn main() {
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/obj/cube.obj"));
-    models.push(Model::new("resources/obj/cube.obj"));
-    models.push(Model::new("resources/obj/cube.obj"));
+    models.push(Model::new("resources/obj/42.obj"));
 
 
     let mut camera = Camera::new(
