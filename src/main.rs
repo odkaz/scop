@@ -110,8 +110,8 @@ fn main() {
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
     models.push(Model::new("resources/obj/cube.obj"));
-    models.push(Model::new("resources/obj/teapot.obj"));
-    models.push(Model::new("resources/obj/teapot.obj"));
+    models.push(Model::new("resources/obj/cube.obj"));
+    models.push(Model::new("resources/obj/cube.obj"));
 
 
     let mut camera = Camera::new(
@@ -133,13 +133,16 @@ fn main() {
         unsafe {
             shader_program.setMat4(c_str!("view"), &camera.look_at());
             shader_program.setMat4(c_str!("projection"), &mvp::projection());    
+            shader_program.setVec3(c_str!("objectColor"), 1.0, 0.5, 0.31);
+            shader_program.setVec3(c_str!("lightColor"),  1.0, 1.0, 1.0);
         }
 
 
         for (i, m) in models.iter_mut().enumerate() {
             unsafe {
                 m.set_trans(i as f32, i as f32, i as f32);
-                m.set_scale(0.2, 0.2, 0.2);
+                m.set_rot(mvp::timer(), mvp::timer(), 0.);
+                // m.set_scale(0.2, 0.2, 0.2);
                 shader_program.setMat4(c_str!("model"), &m.get_model());
                 gl::BindVertexArray(m.get_vao());
                 gl::DrawArrays(gl::TRIANGLES,0, (m.get_vertices().len() / 3) as i32);

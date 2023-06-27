@@ -41,6 +41,9 @@ impl Program {
             gl::UseProgram(self.id);
         }
     }
+    pub unsafe fn setVec3(&self, name: &CStr, x: f32, y: f32, z: f32) {
+        gl::Uniform3f(gl::GetUniformLocation(self.id, name.as_ptr()), x, y, z);
+    }
     pub unsafe fn setMat4(&self, name: &CStr, mat: &TMatrix4<f32>) {
         gl::UniformMatrix4fv(gl::GetUniformLocation(self.id, name.as_ptr()), 1, gl::TRUE, mat.as_mut_arr().as_mut_ptr() as * const f32);
     }

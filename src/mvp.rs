@@ -51,12 +51,17 @@ pub fn look_at(position: &TVector3<f32>, target: &TVector3<f32>, up: &TVector3<f
     view_matrix(cameraRight, cameraUp, cameraDirection, position.clone())
 }
 
-pub fn get_mvp(camera: &mut Camera) -> TMatrix4<f32>{
+pub fn timer() -> f32 {
     let start = SystemTime::now();
     let since_the_epoch = (start
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis() / 30 % 360) as f32;
+    since_the_epoch
+}
+
+pub fn get_mvp(camera: &mut Camera) -> TMatrix4<f32>{
+    let since_the_epoch = timer();
     let p = camera.get_pos();
     let mut trans = Matrix::translation(0., 0., 0.);
     let mut scale = Matrix::scale(1., 1., 1.);

@@ -2,10 +2,12 @@ use gl;
 use crate::parse;
 use crate::buffer::{Buffer};
 use crate::matrix::{Matrix, TMatrix4};
+use crate::vector::{Vector, TVector3};
 
 #[derive(Debug, Clone)]
 pub struct Model {
     pub vertices: Vec<f32>,
+    pub normals: Vec<f32>,
     pub vao: gl::types::GLuint,
     t: [f32; 3],
     r: [f32; 3],
@@ -14,9 +16,10 @@ pub struct Model {
 
 impl Model {
     pub fn new(path: &str) -> Model {
-        let (v, vao) = Self::load_vertex(path);
+        let (v, n, vao) = Self::load_vertex(path);
         Model {
             vertices: v,
+            normals: n,
             vao,
             t: [0.0_f32; 3],
             r: [0.0_f32; 3],
@@ -30,8 +33,28 @@ impl Model {
         }
     }
 
-    fn load_vertex(path: &str) -> (Vec<f32>, gl::types::GLuint) {
+    fn create_normal(v: &Vec<f32>) -> Vec<f32> {
+        let mut res = Vec::new();
+        for row in 0..v.len() / 9 {
+            let i = row * 9;
+            let p0 = [v[i], v[i + 1], v[i + 2]];
+            let p1 = [v[i + 3], v[i + 4], v[i + 5]];
+            let p2 = [v[i + 6], v[i + 7], v[i + 8]];
+            let v0 = Vector::from(p0) - Vector::from(p1);
+            let v1 = Vector::from(p0) - Vector::from(p2);
+            let mut tmp = Vector::cross_product(&v0, &v1).as_vec();
+            for j in 0..3 {
+                res.push(tmp[0]);
+                res.push(tmp[1]);
+                res.push(tmp[2]);
+            }
+        }
+        res
+    }
+
+    fn load_vertex(path: &str) -> (Vec<f32>, Vec<f32>, gl::types::GLuint) {
         let vertices = parse::parse(path);
+        let normals = Self::create_normal(&vertices);
         let mut vao: gl::types::GLuint = 0;
     
         unsafe {
@@ -57,19 +80,28 @@ impl Model {
             0.0, 0.0,
             0.0, 1.0
         ];
+
         // let text_buf = Buffer::new();
         // text_buf.bind(&Vec::from(textures));
         // text_buf.enable_texture();
         // texture::texture();
     
+        let norm_buf = Buffer::new(3);
+        norm_buf.bind(&normals);
+        norm_buf.enable();
+
         // unsafe {
         //     gl::BindVertexArray(0); // Call this when all the bindings are done
         // }
-        (vertices, vao)
+        (vertices, normals, vao)
     }
 
     pub fn get_vertices(&self) -> Vec<f32> {
         self.vertices.clone()
+    }
+
+    pub fn get_normals(&self) -> Vec<f32> {
+        self.normals.clone()
     }
 
     pub fn get_vao(&self) -> gl::types::GLuint {

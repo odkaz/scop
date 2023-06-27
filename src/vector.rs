@@ -162,6 +162,16 @@ impl<T, const N: usize> Vector<T, N> {
     }
 }
 
+impl<T: Copy, const N: usize> Vector<T, N> {
+    pub fn as_vec(&self) -> Vec<T> {
+        let mut res = Vec::new();
+        for i in 0..N {
+            res.push(self[i]);
+        }
+        res
+    }
+}
+
 impl<T: Float, const N: usize> Vector<T, N> {
     pub fn abs (&self) -> T {
         let mut total = T::zero();
