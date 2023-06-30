@@ -11,6 +11,7 @@ pub struct Model {
     pub uvs: Vec<f32>,
     pub normals: Vec<f32>,
     pub vao: gl::types::GLuint,
+    c: [f32; 3],
     t: [f32; 3],
     r: [f32; 3],
     s: [f32; 3],
@@ -20,10 +21,11 @@ impl Model {
     pub fn new(path: &str) -> Model {
         let (v, uvs, n, vao) = Self::load_vertex(path);
         Model {
-            vertices: v,
+            vertices: v.clone(),
             uvs,
             normals: n,
             vao,
+            c: Self::create_center(&v),
             t: [0.0_f32; 3],
             r: [0.0_f32; 3],
             s: [1.0_f32; 3],
@@ -55,16 +57,19 @@ impl Model {
         res
     }
 
-    // fn create_center(v: &Vec<f32>) -> [f32; 3] {
-    //     let mut sum = [0.; 3];
-    //     let mut sumx = 0.;
-    //     let mut sumy = 0.;
-    //     let mut sumz = 0.;
-    //     for (i, v) in v.iter().enumerate() {
-    //         sum[i % 3] = sum[i % 3] + v;
-    //     }
-    //     return sum
-    // }
+    fn create_center(v: &Vec<f32>) -> [f32; 3] {
+        let mut sum = [0.; 3];
+        let mut sumx = 0.;
+        let mut sumy = 0.;
+        let mut sumz = 0.;
+        for (i, v) in v.iter().enumerate() {
+            sum[i % 3] = sum[i % 3] + v;
+        }
+        let x = sum[0] / (v.len() / 3) as f32;
+        let y = sum[1] / (v.len() / 3) as f32;
+        let z = sum[2] / (v.len() / 3) as f32;
+        [x, y, z]
+    }
 
     fn load_vertex(path: &str) -> (Vec<f32>, Vec<f32>, Vec<f32>, gl::types::GLuint) {
         let (vertices, uvs) = parse::parse(path);
@@ -148,6 +153,7 @@ impl Model {
     }
 
     pub fn get_model(&self) -> TMatrix4<f32> {
-        self.translation() * self.rotation() * self.scale()
+        let mat_center = Matrix::translation(-self.c[0], -self.c[1], -self.c[2]);
+        self.translation() * self.rotation() * self.scale() * mat_center
     }
 }
