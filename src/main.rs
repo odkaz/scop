@@ -25,7 +25,7 @@ use render_gl::{Shader, Program};
 use vector::TVector3;
 use std::ffi::{CString, CStr};
 use std::time::Duration;
-use sdl2::keyboard::Keycode;
+use sdl2::keyboard::{Keycode, KeyboardState, Scancode};
 use sdl2::event::Event;
 use num::{Float};
 use camera::Camera;
@@ -163,53 +163,33 @@ fn main() {
     }
 }
 
+fn is_pressed(event_pump: &mut sdl2::EventPump, code: Scancode) -> bool {
+    event_pump.keyboard_state().is_scancode_pressed(code)
+}
+
 fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool {
-    let mut r = 0.0;
-    let mut f = 0.0;
-    const VEL: f32 = 0.1;
+
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. } |
             Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                 return false
             },
-            Event::KeyDown { keycode: Some(keycode), .. } => {
-                match keycode {
-                    Keycode::W => camera.set_vel_f(VEL),
-                    Keycode::A => camera.set_vel_r(-VEL),
-                    Keycode::S => camera.set_vel_f(-VEL),
-                    Keycode::D => camera.set_vel_r(VEL),
-                    _ => {}
-                }
-            },
-            Event::KeyUp { keycode: Some(keycode), .. } => {
-                match keycode {
-                    Keycode::W => {
-                        if camera.get_vel_f() > 0. {
-                            camera.set_vel_f(0.0)
-                        }
-                    },
-                    Keycode::A => {
-                        if camera.get_vel_r() < 0. {
-                            camera.set_vel_r(0.0)
-                        }
-                    },
-                    Keycode::S => {
-                        if camera.get_vel_f() < 0. {
-                            camera.set_vel_f(0.0)
-                        }
-                    },
-                    Keycode::D => {
-                        if camera.get_vel_r() > 0. {
-                            camera.set_vel_r(0.0)
-                        }
-                    },
-                    _ => {}
-                }
-            },
             _ => {}
         }
     }
-    camera.move_pos();
+    const VEL: f32 = 0.1;
+    if is_pressed(event_pump, Scancode::W) {
+        camera.move_forward(VEL);
+    }
+    if is_pressed(event_pump, Scancode::A) {
+        camera.move_right(-VEL);
+    }
+    if is_pressed(event_pump, Scancode::S) {
+        camera.move_forward(-VEL);
+    }
+    if is_pressed(event_pump, Scancode::D) {
+        camera.move_right(VEL);
+    }
     return true
 }
