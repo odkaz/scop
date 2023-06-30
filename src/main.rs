@@ -164,30 +164,52 @@ fn main() {
 }
 
 fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool {
+    let mut r = 0.0;
+    let mut f = 0.0;
+    const VEL: f32 = 0.1;
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. } |
             Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                 return false
             },
-            Event::KeyDown { keycode: Some(Keycode::W), .. } => {
-                camera.move_forward(0.1);
-
+            Event::KeyDown { keycode: Some(keycode), .. } => {
+                match keycode {
+                    Keycode::W => camera.set_vel_f(VEL),
+                    Keycode::A => camera.set_vel_r(-VEL),
+                    Keycode::S => camera.set_vel_f(-VEL),
+                    Keycode::D => camera.set_vel_r(VEL),
+                    _ => {}
+                }
             },
-            Event::KeyDown { keycode: Some(Keycode::A), .. } => {
-                camera.move_right(-0.1);
-
-            },
-            Event::KeyDown { keycode: Some(Keycode::S), .. } => {
-                camera.move_forward(-0.1);
-
-            },
-            Event::KeyDown { keycode: Some(Keycode::D), .. } => {
-                camera.move_right(0.1);
-
+            Event::KeyUp { keycode: Some(keycode), .. } => {
+                match keycode {
+                    Keycode::W => {
+                        if camera.get_vel_f() > 0. {
+                            camera.set_vel_f(0.0)
+                        }
+                    },
+                    Keycode::A => {
+                        if camera.get_vel_r() < 0. {
+                            camera.set_vel_r(0.0)
+                        }
+                    },
+                    Keycode::S => {
+                        if camera.get_vel_f() < 0. {
+                            camera.set_vel_f(0.0)
+                        }
+                    },
+                    Keycode::D => {
+                        if camera.get_vel_r() > 0. {
+                            camera.set_vel_r(0.0)
+                        }
+                    },
+                    _ => {}
+                }
             },
             _ => {}
         }
     }
+    camera.move_pos();
     return true
 }

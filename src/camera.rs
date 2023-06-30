@@ -7,6 +7,7 @@ use num::{Float, Zero};
 #[derive(Debug, Clone)]
 pub struct Camera {
     pos: TVector3<f32>,
+    vel: TVector3<f32>,
     target: TVector3<f32>,
     dir: TVector3<f32>,
     right: TVector3<f32>,
@@ -18,6 +19,7 @@ impl Camera {
         let direction = (target.clone() - position.clone()).normalize();
         Camera {
             pos: position.clone(),
+            vel: Vector::from([0., 0., 0.]),
             target: target.clone(),
             dir: direction.clone(),
             right: Vector::cross_product(&up, &direction).normalize(),
@@ -27,15 +29,28 @@ impl Camera {
 }
 
 impl Camera {
-    pub fn move_forward(&mut self, scale: f32) {
-        let mut buf = self.dir.clone();
-        buf.scl(scale);
-        self.pos = self.pos.clone() + buf;
+    pub fn set_vel_f(&mut self, value: f32) {
+        self.vel = Vector::from([value, self.vel[1], self.vel[2]]);
     }
-    pub fn move_right(&mut self, scale: f32) {
-        let mut buf = self.right.clone();
-        buf.scl(scale);
-        self.pos = self.pos.clone() + buf;
+
+    pub fn get_vel_f(&self) -> f32 {
+        self.vel[0]
+    }
+
+    pub fn get_vel_r(&self) -> f32 {
+        self.vel[1]
+    }
+
+    pub fn set_vel_r(&mut self, value: f32) {
+        self.vel = Vector::from([self.vel[0], value, self.vel[2]]);
+    }
+
+    pub fn move_pos(&mut self) {
+        let mut buf_f = self.dir.clone();
+        buf_f.scl(self.vel[0]);
+        let mut buf_r = self.right.clone();
+        buf_r.scl(self.vel[1]);
+        self.pos = self.pos.clone() + buf_f + buf_r;
     }
 }
 
