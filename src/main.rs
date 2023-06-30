@@ -38,43 +38,6 @@ use self::gl::types::*;
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
 
-// fn load_buf() -> (Vec<f32>, gl::types::GLuint) {
-//     let vertices = parse::parse("resources/obj/teapot.obj");
-//     let vertex_buf = Buffer::new();
-//     vertex_buf.bind(&vertices);
-
-//     let mut vao: gl::types::GLuint = 0;
-//     unsafe {
-//         gl::GenVertexArrays(1, &mut vao);
-//         gl::BindVertexArray(vao);
-//         vertex_buf.enable();
-//     }
-//     let colors: [f32; 9] = [
-//         1., 0.5, 0.0, // left
-//         0.5, 0.5, 0.0, // right
-//         0.5,  0.5, 0.0  // top
-//     ];
-//     let color_buf = Buffer::new();
-//     color_buf.bind(&Vec::from(colors));
-//     color_buf.enable();
-//     let textures: [f32; 12] = [
-//         1.0, 1.0,
-//         1.0, 0.0,
-//         0.0, 1.0,
-//         1.0, 0.0,
-//         0.0, 0.0,
-//         0.0, 1.0
-//     ];
-//     // let text_buf = Buffer::new();
-//     // text_buf.bind(&Vec::from(textures));
-//     // text_buf.enable_texture();
-//     // texture::texture();
-
-//     unsafe {
-//         gl::BindVertexArray(0); // Call this when all the bindings are done
-//     }
-//     (vertices, vao)
-// }
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -119,7 +82,6 @@ fn main() {
         TVector3::from([0., 1., 0.]),
     );
     while process_events(&mut event_pump, &mut camera) {
-
         let (w, h) = window.size();
         unsafe {
             gl::Viewport(0, 0, w as i32, h as i32);
@@ -136,7 +98,6 @@ fn main() {
             shader_program.setVec3(c_str!("lightColor"),  1.0, 1.0, 1.0);
         }
 
-
         for (i, m) in models.iter_mut().enumerate() {
             unsafe {
                 m.set_trans(i as f32, i as f32, i as f32);
@@ -147,16 +108,6 @@ fn main() {
                 gl::DrawArrays(gl::TRIANGLES,0, (m.get_vertices().len() / 3) as i32);
             }
         }
-
-
-        // // pass uniform to shader
-        // let mvp = get_mvp(&mut camera);
-
-        // unsafe {
-        //     shader_program.setMat4(c_str!("mvp"), &mvp);
-        //     gl::BindVertexArray(vao);
-        //     gl::DrawArrays(gl::TRIANGLES,0, (vertices.len() / 3) as i32);
-        // }
 
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
