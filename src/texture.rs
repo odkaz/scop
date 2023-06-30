@@ -17,7 +17,7 @@ pub fn texture() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
-        let img = image::open(&Path::new("resources/textures/container.jpg")).expect("Failed to load texture");
+        let img = image::open(&Path::new("resources/textures/metal.png")).expect("Failed to load texture");
         let data = img.as_bytes();
         gl::TexImage2D(gl::TEXTURE_2D,
                         0,

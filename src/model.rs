@@ -3,10 +3,12 @@ use crate::parse;
 use crate::buffer::{Buffer};
 use crate::matrix::{Matrix, TMatrix4};
 use crate::vector::{Vector, TVector3};
+use crate::texture;
 
 #[derive(Debug, Clone)]
 pub struct Model {
     pub vertices: Vec<f32>,
+    pub uvs: Vec<f32>,
     pub normals: Vec<f32>,
     pub vao: gl::types::GLuint,
     t: [f32; 3],
@@ -16,9 +18,10 @@ pub struct Model {
 
 impl Model {
     pub fn new(path: &str) -> Model {
-        let (v, n, vao) = Self::load_vertex(path);
+        let (v, uvs, n, vao) = Self::load_vertex(path);
         Model {
             vertices: v,
+            uvs,
             normals: n,
             vao,
             t: [0.0_f32; 3],
@@ -52,8 +55,19 @@ impl Model {
         res
     }
 
-    fn load_vertex(path: &str) -> (Vec<f32>, Vec<f32>, gl::types::GLuint) {
-        let vertices = parse::parse(path);
+    // fn create_center(v: &Vec<f32>) -> [f32; 3] {
+    //     let mut sum = [0.; 3];
+    //     let mut sumx = 0.;
+    //     let mut sumy = 0.;
+    //     let mut sumz = 0.;
+    //     for (i, v) in v.iter().enumerate() {
+    //         sum[i % 3] = sum[i % 3] + v;
+    //     }
+    //     return sum
+    // }
+
+    fn load_vertex(path: &str) -> (Vec<f32>, Vec<f32>, Vec<f32>, gl::types::GLuint) {
+        let (vertices, uvs) = parse::parse(path);
         let normals = Self::create_normal(&vertices);
         let mut vao: gl::types::GLuint = 0;
     
@@ -81,10 +95,11 @@ impl Model {
             0.0, 1.0
         ];
 
-        // let text_buf = Buffer::new();
+        let text_buf = Buffer::new(2);
         // text_buf.bind(&Vec::from(textures));
-        // text_buf.enable_texture();
-        // texture::texture();
+        text_buf.bind(&uvs);
+        text_buf.enable_texture();
+        texture::texture();
     
         let norm_buf = Buffer::new(3);
         norm_buf.bind(&normals);
@@ -93,7 +108,7 @@ impl Model {
         // unsafe {
         //     gl::BindVertexArray(0); // Call this when all the bindings are done
         // }
-        (vertices, normals, vao)
+        (vertices, uvs, normals, vao)
     }
 
     pub fn get_vertices(&self) -> Vec<f32> {

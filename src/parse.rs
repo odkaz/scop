@@ -31,9 +31,10 @@ fn get_face(line: String) -> Vec<usize> {
     face
 }
 
-pub fn parse(file_path: &str) -> Vec<f32> {
+pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     let mut points = Vec::new();
     let mut faces = Vec::new();
+    let mut uvs = Vec::new();
 
     let lines = read_lines(file_path.to_string());
     for line in lines {
@@ -52,9 +53,12 @@ pub fn parse(file_path: &str) -> Vec<f32> {
                 let mut f = get_face(str1);
                 if f.len() == 3 {
                     faces.push(f);
+                    uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
                 } else if f.len() == 4 {
                     faces.push(Vec::from([f[0], f[1], f[2]]));
                     faces.push(Vec::from([f[0], f[2], f[3]]));
+                    uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
+                    uvs.append(&mut Vec::from([0.0, 1.0, 1.0, 0.0, 1.0, 1.0]));
                 }
             },
             _ => (),
@@ -69,5 +73,5 @@ pub fn parse(file_path: &str) -> Vec<f32> {
             }
         }
     }
-    return vertices
+    (vertices, uvs)
 }

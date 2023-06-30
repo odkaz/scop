@@ -112,6 +112,7 @@ fn main() {
     models.push(Model::new("resources/obj/42.obj"));
 
 
+
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
         TVector3::from([0., 0., 0.]),
@@ -139,7 +140,7 @@ fn main() {
         for (i, m) in models.iter_mut().enumerate() {
             unsafe {
                 m.set_trans(i as f32, i as f32, i as f32);
-                m.set_rot(mvp::timer(), mvp::timer(), 0.);
+                m.set_rot(0., mvp::timer(), 0.);
                 // m.set_scale(0.2, 0.2, 0.2);
                 shader_program.setMat4(c_str!("model"), &m.get_model());
                 gl::BindVertexArray(m.get_vao());
