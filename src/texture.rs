@@ -1,7 +1,7 @@
 use gl;
 extern crate image;
-use std::path::Path;
 use std::ffi::c_void;
+use crate::load_bmp::Bitmap;
 
 pub fn texture() {
     // load and create a texture
@@ -17,8 +17,8 @@ pub fn texture() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
-        let img = image::open(&Path::new("resources/textures/metal.png")).expect("Failed to load texture");
-        let data = img.as_bytes();
+        let img = Bitmap::open(&String::from("resources/textures/stone.bmp")).unwrap();
+        let data = img.get_data().as_slice();
         gl::TexImage2D(gl::TEXTURE_2D,
                         0,
                         gl::RGB as i32,

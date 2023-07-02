@@ -10,7 +10,8 @@ mod mvp;
 pub mod render_gl;
 pub mod matrix;
 pub mod vector;
-mod texture;
+pub mod texture;
+pub mod load_bmp;
 pub mod camera;
 mod macros;
 pub mod model;
@@ -20,8 +21,6 @@ use matrix::Matrix;
 use buffer::Buffer;
 use mvp::get_mvp;
 use render_gl::{Shader, Program};
-// pub mod shader;
-// use shader::Shader;
 use vector::TVector3;
 use std::ffi::{CString, CStr};
 use std::time::Duration;
@@ -30,10 +29,6 @@ use sdl2::event::Event;
 use num::{Float};
 use camera::Camera;
 use model::Model;
-use std::ptr;
-use std::mem;
-use std::os::raw::c_void;
-use self::gl::types::*;
 
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
@@ -72,7 +67,7 @@ fn main() {
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/obj/42.obj"));
+    models.push(Model::new("resources/obj/new_cube.obj"));
 
 
 
