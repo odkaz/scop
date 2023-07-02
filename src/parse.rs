@@ -58,7 +58,7 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
                     faces.push(Vec::from([f[0], f[1], f[2]]));
                     faces.push(Vec::from([f[0], f[2], f[3]]));
                     uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
-                    uvs.append(&mut Vec::from([0.0, 1.0, 1.0, 0.0, 1.0, 1.0]));
+                    uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
                 }
             },
             _ => (),
