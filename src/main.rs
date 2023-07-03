@@ -22,8 +22,8 @@ use std::ffi::{CStr, CString};
 use std::time::Duration;
 use vector::TVector3;
 
-const SCR_WIDTH: u32 = 600;
-const SCR_HEIGHT: u32 = 600;
+const SCR_WIDTH: u32 = 1200;
+const SCR_HEIGHT: u32 = 900;
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -74,7 +74,6 @@ fn main() {
         shader_program.set_used();
         unsafe {
             shader_program.set_mat4(c_str!("view"), &camera.look_at());
-            // shader_program.set_mat4(c_str!("projection"), &mvp::projection(600., 600., 135.));
             shader_program.set_mat4(
                 c_str!("projection"),
                 &mvp::projection(w as f32, h as f32, 135.),

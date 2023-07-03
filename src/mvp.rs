@@ -8,7 +8,7 @@ pub fn projection(width: f32, height: f32, degree: f32) -> TMatrix4<f32> {
     // let width = 600.;
     // let height = 600.;
     let fov = degree / 360. * PI;
-    let aspect = width / height;
+    let aspect = height / width;
     make_perspective(fov, aspect, znear, zfar)
 }
 
