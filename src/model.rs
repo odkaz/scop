@@ -1,9 +1,9 @@
-use gl;
-use crate::parse;
-use crate::buffer::{Buffer};
+use crate::buffer::Buffer;
 use crate::matrix::{Matrix, TMatrix4};
-use crate::vector::{Vector, TVector3};
+use crate::parse;
 use crate::texture;
+use crate::vector::Vector;
+use gl;
 
 #[derive(Debug, Clone)]
 pub struct Model {
@@ -47,8 +47,8 @@ impl Model {
             let p2 = [v[i + 6], v[i + 7], v[i + 8]];
             let v0 = Vector::from(p0) - Vector::from(p1);
             let v1 = Vector::from(p0) - Vector::from(p2);
-            let mut tmp = Vector::cross_product(&v0, &v1).as_vec();
-            for j in 0..3 {
+            let tmp = Vector::cross_product(&v0, &v1).as_vec();
+            for _ in 0..3 {
                 res.push(tmp[0]);
                 res.push(tmp[1]);
                 res.push(tmp[2]);
@@ -59,9 +59,6 @@ impl Model {
 
     fn create_center(v: &Vec<f32>) -> [f32; 3] {
         let mut sum = [0.; 3];
-        let mut sumx = 0.;
-        let mut sumy = 0.;
-        let mut sumz = 0.;
         for (i, v) in v.iter().enumerate() {
             sum[i % 3] = sum[i % 3] + v;
         }
@@ -75,7 +72,7 @@ impl Model {
         let (vertices, uvs) = parse::parse(path);
         let normals = Self::create_normal(&vertices);
         let mut vao: gl::types::GLuint = 0;
-    
+
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
             gl::BindVertexArray(vao);
@@ -86,33 +83,32 @@ impl Model {
         let colors: [f32; 9] = [
             1., 0.5, 0.0, // left
             0.5, 0.5, 0.0, // right
-            0.5,  0.5, 0.0  // top
+            0.5, 0.5, 0.0, // top
         ];
         let color_buf = Buffer::new(1);
         color_buf.bind(&Vec::from(colors));
         color_buf.enable();
-        let textures: [f32; 12] = [
-            1.0, 1.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 0.0,
-            0.0, 0.0,
-            0.0, 1.0
-        ];
-
+        // let textures: [f32; 12] = [
+        //     1.0, 1.0,
+        //     1.0, 0.0,
+        //     0.0, 1.0,
+        //     1.0, 0.0,
+        //     0.0, 0.0,
+        //     0.0, 1.0
+        // ];
         let text_buf = Buffer::new(2);
         // text_buf.bind(&Vec::from(textures));
         text_buf.bind(&uvs);
         text_buf.enable_texture();
         texture::texture();
-    
+
         let norm_buf = Buffer::new(3);
         norm_buf.bind(&normals);
         norm_buf.enable();
 
-        // unsafe {
-        //     gl::BindVertexArray(0); // Call this when all the bindings are done
-        // }
+        unsafe {
+            gl::BindVertexArray(0); // Call this when all the bindings are done
+        }
         (vertices, uvs, normals, vao)
     }
 

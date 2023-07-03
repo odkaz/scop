@@ -1,8 +1,6 @@
 use std::fmt::Display;
-use std::ops::{Add, Mul, Sub, Index};
-extern crate num;
+use std::ops::{Add, Index, Mul, Sub};
 
-use num::{Float};
 pub type TVector<T, const R: usize> = Vector<T, R>;
 pub type TVector2<T> = TVector<T, 2>;
 pub type TVector3<T> = TVector<T, 3>;
@@ -57,9 +55,7 @@ impl<T: Clone + Add<Output = T>, const N: usize> Add<Vector<T, N>> for Vector<T,
         for i in 0..N {
             res.push(self.data[i].clone() + rhs.data[i].clone());
         }
-        Vector {
-            data: res,
-        }
+        Vector { data: res }
     }
 }
 
@@ -70,18 +66,16 @@ impl<T: Clone + Add<Output = T>, const N: usize> Add<&Vector<T, N>> for &Vector<
         for i in 0..N {
             res.push(self.data[i].clone() + rhs.data[i].clone());
         }
-        Vector {
-            data: res,
-        }
+        Vector { data: res }
     }
 }
 
-impl<T , const N: usize> Mul<Vector<T, N>> for Vector<T, N> {
-    type Output = Vector<T, N>;
-    fn mul(self, rhs: Vector<T, N>) -> Vector<T, N> {
-        self
-    }
-}
+// impl<T , const N: usize> Mul<Vector<T, N>> for Vector<T, N> {
+//     type Output = Vector<T, N>;
+//     fn mul(self, rhs: Vector<T, N>) -> Vector<T, N> {
+//         self
+//     }
+// }
 impl<T: Sub<Output = T> + Clone, const N: usize> Vector<T, N> {
     pub fn sub(&mut self, v: &Vector<T, N>) {
         let it1 = self.data.iter();
@@ -105,7 +99,7 @@ impl<T: Default + Sub<Output = T> + Copy, const N: usize> Sub<Vector<T, N>> for 
         for i in 0..N {
             res[i] = l[i] - r[i];
         }
-        Vector::from(res)    
+        Vector::from(res)
     }
 }
 
@@ -118,7 +112,7 @@ impl<T: Default + Sub<Output = T> + Copy, const N: usize> Sub<&Vector<T, N>> for
         for i in 0..N {
             res[i] = l[i] - r[i];
         }
-        Vector::from(res)    
+        Vector::from(res)
     }
 }
 
@@ -147,17 +141,8 @@ impl<T: Display, const N: usize> Display for Vector<T, N> {
     }
 }
 
-// impl<T: Display + Default> Vector::<T> {
-//     fn dot::<T>(&self, v: Vector::<T>) -> T {
-//         let x: T = Default::default;
-//         println!("{}", x);
-//     }
-// }
-
-
-
 impl<T, const N: usize> Vector<T, N> {
-    pub fn as_slice(&self) -> & [T] {
+    pub fn as_slice(&self) -> &[T] {
         self.data.as_slice()
     }
 }
@@ -172,9 +157,9 @@ impl<T: Copy, const N: usize> Vector<T, N> {
     }
 }
 
-impl<T: Float, const N: usize> Vector<T, N> {
-    pub fn abs (&self) -> T {
-        let mut total = T::zero();
+impl<const N: usize> Vector<f32, N> {
+    pub fn abs(&self) -> f32 {
+        let mut total = 0.;
         for i in 0..N {
             total = total + (self.data[i] * self.data[i]);
         }
@@ -182,9 +167,9 @@ impl<T: Float, const N: usize> Vector<T, N> {
     }
 }
 
-impl<T: Float, const N: usize> Vector<T, N> {
-    pub fn normalize (&self) -> Vector<T, N> {
-        let mut total = T::zero();
+impl<const N: usize> Vector<f32, N> {
+    pub fn normalize(&self) -> Vector<f32, N> {
+        let mut total = 0.;
         for i in 0..N {
             total = total + (self.data[i] * self.data[i]);
         }
@@ -193,15 +178,13 @@ impl<T: Float, const N: usize> Vector<T, N> {
         for item in self.data.clone() {
             res.push(item / sq);
         }
-        Vector {
-            data: res.clone(),
-        }
+        Vector { data: res.clone() }
     }
 }
 
-impl<T: Float> TVector3<T> {
-    pub fn cross_product(u: &TVector3<T>, v: &TVector3<T>) -> TVector3<T> {
-        let mut res = [T::zero(); 3];
+impl TVector3<f32> {
+    pub fn cross_product(u: &TVector3<f32>, v: &TVector3<f32>) -> TVector3<f32> {
+        let mut res = [0.; 3];
         let u_arr = u.as_slice();
         let v_arr = v.as_slice();
         res[0] = u_arr[1] * v_arr[2] - u_arr[2] * v_arr[1];

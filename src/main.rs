@@ -1,36 +1,29 @@
 extern crate gl;
 extern crate sdl2;
-extern crate num;
 
 pub mod buffer;
-mod parse;
-mod mvp;
-pub mod render_gl;
-pub mod matrix;
-pub mod vector;
-pub mod texture;
-pub mod load_bmp;
 pub mod camera;
+pub mod load_bmp;
 mod macros;
+pub mod matrix;
 pub mod model;
+mod mvp;
+mod parse;
+pub mod render_gl;
+pub mod texture;
+pub mod vector;
 
-// use crate::vector::{Vector, TVector3};
-use matrix::Matrix;
-use buffer::Buffer;
-use mvp::get_mvp;
-use render_gl::{Shader, Program};
-use vector::TVector3;
-use std::ffi::{CString, CStr};
-use std::time::Duration;
-use sdl2::keyboard::{Keycode, KeyboardState, Scancode};
-use sdl2::event::Event;
-use num::{Float};
 use camera::Camera;
 use model::Model;
+use render_gl::{Program, Shader};
+use sdl2::event::Event;
+use sdl2::keyboard::{Keycode, Scancode};
+use std::ffi::{CStr, CString};
+use std::time::Duration;
+use vector::TVector3;
 
 const SCR_WIDTH: u32 = 600;
 const SCR_HEIGHT: u32 = 600;
-
 
 fn main() {
     let sdl = sdl2::init().unwrap();
@@ -53,21 +46,16 @@ fn main() {
     //event
     let mut event_pump = sdl.event_pump().unwrap();
 
-
     // //shader
     let vert_shader =
-        Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap())
-            .unwrap();
+        Shader::from_vert_source(&CString::new(include_str!("triangle.vert")).unwrap()).unwrap();
     let frag_shader =
-        Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap())
-            .unwrap();
+        Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap()).unwrap();
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
     models.push(Model::new("resources/obj/new_cube.obj"));
-
-
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
@@ -85,10 +73,14 @@ fn main() {
         }
         shader_program.set_used();
         unsafe {
-            shader_program.setMat4(c_str!("view"), &camera.look_at());
-            shader_program.setMat4(c_str!("projection"), &mvp::projection());
-            shader_program.setVec3(c_str!("objectColor"), 1.0, 0.5, 0.31);
-            shader_program.setVec3(c_str!("lightColor"),  1.0, 1.0, 1.0);
+            shader_program.set_mat4(c_str!("view"), &camera.look_at());
+            // shader_program.set_mat4(c_str!("projection"), &mvp::projection(600., 600., 135.));
+            shader_program.set_mat4(
+                c_str!("projection"),
+                &mvp::projection(w as f32, h as f32, 135.),
+            );
+            shader_program.set_vec3(c_str!("objectColor"), 1.0, 0.5, 0.31);
+            shader_program.set_vec3(c_str!("lightColor"), 1.0, 1.0, 1.0);
         }
 
         for (i, m) in models.iter_mut().enumerate() {
@@ -96,9 +88,9 @@ fn main() {
                 m.set_trans(i as f32, i as f32, i as f32);
                 m.set_rot(0., mvp::timer(), 0.);
                 // m.set_scale(0.2, 0.2, 0.2);
-                shader_program.setMat4(c_str!("model"), &m.get_model());
+                shader_program.set_mat4(c_str!("model"), &m.get_model());
                 gl::BindVertexArray(m.get_vao());
-                gl::DrawArrays(gl::TRIANGLES,0, (m.get_vertices().len() / 3) as i32);
+                gl::DrawArrays(gl::TRIANGLES, 0, (m.get_vertices().len() / 3) as i32);
             }
         }
 
@@ -112,13 +104,13 @@ fn is_pressed(event_pump: &mut sdl2::EventPump, code: Scancode) -> bool {
 }
 
 fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool {
-
     for event in event_pump.poll_iter() {
         match event {
-            sdl2::event::Event::Quit { .. } |
-            Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                return false
-            },
+            sdl2::event::Event::Quit { .. }
+            | Event::KeyDown {
+                keycode: Some(Keycode::Escape),
+                ..
+            } => return false,
             _ => {}
         }
     }
@@ -135,5 +127,5 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool
     if is_pressed(event_pump, Scancode::D) {
         camera.move_right(VEL);
     }
-    return true
+    return true;
 }

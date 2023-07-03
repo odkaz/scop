@@ -1,17 +1,13 @@
-extern crate num;
-
-use crate::vector::{Vector, TVector3};
 use crate::matrix::{Matrix, TMatrix4};
-use num::{Float, Zero};
+use crate::vector::{TVector3, Vector};
 
 #[derive(Debug, Clone)]
 pub struct Camera {
     pos: TVector3<f32>,
-    vel: TVector3<f32>,
     target: TVector3<f32>,
     dir: TVector3<f32>,
     right: TVector3<f32>,
-    up: TVector3<f32>
+    up: TVector3<f32>,
 }
 
 impl Camera {
@@ -19,7 +15,6 @@ impl Camera {
         let direction = (target.clone() - position.clone()).normalize();
         Camera {
             pos: position.clone(),
-            vel: Vector::from([0., 0., 0.]),
             target: target.clone(),
             dir: direction.clone(),
             right: Vector::cross_product(&up, &direction).normalize(),
@@ -60,7 +55,12 @@ impl Camera {
 }
 
 impl Camera {
-    fn view_matrix(r: TVector3<f32>, u: TVector3<f32>, d: TVector3<f32>, p: TVector3<f32>) -> TMatrix4<f32> {
+    fn view_matrix(
+        r: TVector3<f32>,
+        u: TVector3<f32>,
+        d: TVector3<f32>,
+        p: TVector3<f32>,
+    ) -> TMatrix4<f32> {
         let lhs = Matrix::from([
             [r[0], r[1], r[2], 0.],
             [u[0], u[1], u[2], 0.],
@@ -80,6 +80,11 @@ impl Camera {
         // self.dir = (self.pos.clone() - self.dir.clone()).normalize();
         self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
         self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
-        Camera::view_matrix(self.right.clone(), self.up.clone(), self.dir.clone(), self.pos.clone())
+        Camera::view_matrix(
+            self.right.clone(),
+            self.up.clone(),
+            self.dir.clone(),
+            self.pos.clone(),
+        )
     }
 }

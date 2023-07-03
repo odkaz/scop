@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{ self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader};
 
 fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
     let file = File::open(filename).unwrap();
@@ -48,9 +48,9 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
             'v' => {
                 let p = get_point(str1);
                 points.push(p);
-            },
+            }
             'f' => {
-                let mut f = get_face(str1);
+                let f = get_face(str1);
                 if f.len() == 3 {
                     faces.push(f);
                     uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
@@ -60,7 +60,7 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
                     uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
                     uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
                 }
-            },
+            }
             _ => (),
         }
     }

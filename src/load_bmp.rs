@@ -1,4 +1,4 @@
-use std::fs::{File, metadata};
+use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self};
 
@@ -23,32 +23,31 @@ impl Bitmap {
         self.height
     }
     pub fn get_data(&self) -> &Vec<u8> {
-        return &self.data
+        return &self.data;
     }
     pub fn read_file() {}
 
     pub fn open(path: &String) -> Result<Bitmap, io::Error> {
-        let x = metadata(path)?.len();
-
         let mut file = File::open(path)?;
         let mut header_buf = [0; 54];
-        file.read_exact(&mut header_buf);
+        file.read_exact(&mut header_buf)
+            .expect("failed to read file");
         if header_buf[0] != 'B' as u8 || header_buf[1] != 'M' as u8 {
             panic!("The entered file does not have appropriate BMP header");
         }
-        let mut dataPos: u32 = header_buf[10] as u32;
-        let mut imageSize: u32 = 0;
+        let mut data_pos: u32 = header_buf[10] as u32;
+        // let mut image_size: u32 = 0;
         let width: u32 = u32::from_ne_bytes(header_buf[18..22].try_into().unwrap());
         let height: u32 = u32::from_ne_bytes(header_buf[22..26].try_into().unwrap());
-        if dataPos == 0 {
-            dataPos = 54;
+        if data_pos == 0 {
+            data_pos = 54;
         }
-        if imageSize == 0 {
-            imageSize = width * height * 3;
-        }
+        // if image_size == 0 {
+        //     image_size = width * height * 3;
+        // }
         let mut content = Vec::new();
         file.read_to_end(&mut content).expect("failed to read");
-        let s = &content.as_slice()[dataPos as usize - 54..];
+        let s = &content.as_slice()[data_pos as usize - 54..];
         let mut rgb = Vec::new();
 
         for h in 0..height as usize {
