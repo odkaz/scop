@@ -1,5 +1,4 @@
 use gl;
-extern crate image;
 use std::ffi::c_void;
 use crate::load_bmp::Bitmap;
 

@@ -1,5 +1,3 @@
-extern crate nalgebra_glm as glm;
-
 use crate::matrix::{Matrix, TMatrix4};
 use crate::vector::{Vector, TVector3, TVector4};
 use crate::camera::Camera;

@@ -1,6 +1,4 @@
 extern crate gl;
-extern crate image;
-extern crate nalgebra_glm as glm;
 extern crate sdl2;
 extern crate num;
 
@@ -88,7 +86,7 @@ fn main() {
         shader_program.set_used();
         unsafe {
             shader_program.setMat4(c_str!("view"), &camera.look_at());
-            shader_program.setMat4(c_str!("projection"), &mvp::projection());    
+            shader_program.setMat4(c_str!("projection"), &mvp::projection());
             shader_program.setVec3(c_str!("objectColor"), 1.0, 0.5, 0.31);
             shader_program.setVec3(c_str!("lightColor"),  1.0, 1.0, 1.0);
         }
