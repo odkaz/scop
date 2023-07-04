@@ -40,6 +40,9 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     for line in lines {
         let str1 = line.unwrap();
         let s: Vec<&str> = str1.split_whitespace().collect();
+        if s.len() == 0 {
+            continue;
+        }
         match s[0] {
             "v" => {
                 let p = get_point(s);

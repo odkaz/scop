@@ -34,6 +34,11 @@ impl Camera {
         buf.scl(scale);
         self.pos = self.pos.clone() + buf;
     }
+    pub fn move_up(&mut self, scale: f32) {
+        let mut buf = self.up.clone();
+        buf.scl(scale);
+        self.pos = self.pos.clone() + buf;
+    }
 }
 
 impl Camera {

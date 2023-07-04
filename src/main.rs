@@ -55,14 +55,14 @@ fn main() {
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/wavefront_obj/Aircraft.obj"));
+    models.push(Model::new("resources/genshin_obj/hutao.obj"));
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
         TVector3::from([0., 0., 0.]),
         TVector3::from([0., 1., 0.]),
     );
-    while process_events(&mut event_pump, &mut camera) {
+    while process_events(&mut event_pump, &mut camera, &mut models) {
         let (w, h) = window.size();
         unsafe {
             gl::Viewport(0, 0, w as i32, h as i32);
@@ -84,7 +84,7 @@ fn main() {
 
         for (i, m) in models.iter_mut().enumerate() {
             unsafe {
-                m.set_trans(i as f32, i as f32, i as f32);
+                // m.set_trans(i as f32, i as f32, i as f32);
                 m.set_rot(0., mvp::timer(), 0.);
                 // m.set_scale(0.2, 0.2, 0.2);
                 shader_program.set_mat4(c_str!("model"), &m.get_model());
@@ -102,7 +102,7 @@ fn is_pressed(event_pump: &mut sdl2::EventPump, code: Scancode) -> bool {
     event_pump.keyboard_state().is_scancode_pressed(code)
 }
 
-fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool {
+fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models: &mut Vec<Model>) -> bool {
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. }
@@ -126,5 +126,25 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera) -> bool
     if is_pressed(event_pump, Scancode::D) {
         camera.move_right(VEL);
     }
+    if is_pressed(event_pump, Scancode::E) {
+        camera.move_up(VEL);
+    }
+    if is_pressed(event_pump, Scancode::Q) {
+        camera.move_up(-VEL);
+    }
+    if is_pressed(event_pump, Scancode::Right) {
+        models[0].move_x(VEL);
+    }
+    if is_pressed(event_pump, Scancode::Left) {
+        models[0].move_x(-VEL);
+    }
+    if is_pressed(event_pump, Scancode::Up) {
+        models[0].move_z(VEL);
+    }
+    if is_pressed(event_pump, Scancode::Down) {
+        models[0].move_z(-VEL);
+    }
+
+
     return true;
 }

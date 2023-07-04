@@ -112,6 +112,27 @@ impl Model {
         (vertices, uvs, normals, vao)
     }
 
+    pub fn move_x(&mut self, scale: f32) {
+        let mut buf = self.t.clone();
+        println!("t{:?}", self.t);
+        buf[0] = buf[0] + scale;
+        self.t = buf;
+    }
+
+    pub fn move_y(&mut self, scale: f32) {
+        let mut buf = self.t.clone();
+        buf[1] = buf[1] + scale;
+        self.t = buf;
+    }
+
+    pub fn move_z(&mut self, scale: f32) {
+        let mut buf = self.t.clone();
+        buf[2] = buf[2] + scale;
+        self.t = buf;
+    }
+
+
+
     pub fn get_vertices(&self) -> Vec<f32> {
         self.vertices.clone()
     }
@@ -122,6 +143,10 @@ impl Model {
 
     pub fn get_vao(&self) -> gl::types::GLuint {
         self.vao
+    }
+
+    pub fn get_trans(&self) -> [f32; 3] {
+        self.t
     }
 
     pub fn set_trans(&mut self, x: f32, y: f32, z: f32) {
