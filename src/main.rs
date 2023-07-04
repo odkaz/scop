@@ -55,7 +55,7 @@ fn main() {
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/obj/new_cube.obj"));
+    models.push(Model::new("resources/wavefront_obj/Aircraft.obj"));
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),

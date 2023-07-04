@@ -6,9 +6,9 @@ fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
     return io::BufReader::new(file).lines();
 }
 
-fn get_point(line: String) -> Vec<f32> {
+fn get_point(line: Vec<&str>) -> Vec<f32> {
     let mut point = Vec::new();
-    for byte in line.split_whitespace() {
+    for byte in line {
         let t: f32 = match byte.parse() {
             Ok(num) => num,
             Err(_) => continue,
@@ -18,9 +18,9 @@ fn get_point(line: String) -> Vec<f32> {
     point
 }
 
-fn get_face(line: String) -> Vec<usize> {
+fn get_face(line: Vec<&str>) -> Vec<usize> {
     let mut face = Vec::new();
-    for byte in line.split_whitespace() {
+    for byte in line {
         let parts: Vec<&str> = byte.split("/").collect();
         let t: usize = match parts[0].parse() {
             Ok(num) => num,
@@ -39,18 +39,14 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     let lines = read_lines(file_path.to_string());
     for line in lines {
         let str1 = line.unwrap();
-        let id = match str1.chars().nth(0) {
-            None => continue,
-            Some(c) => c,
-        };
-
-        match id {
-            'v' => {
-                let p = get_point(str1);
+        let s: Vec<&str> = str1.split_whitespace().collect();
+        match s[0] {
+            "v" => {
+                let p = get_point(s);
                 points.push(p);
             }
-            'f' => {
-                let f = get_face(str1);
+            "f" => {
+                let f = get_face(s);
                 if f.len() == 3 {
                     faces.push(f);
                     uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
@@ -59,6 +55,8 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
                     faces.push(Vec::from([f[0], f[2], f[3]]));
                     uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
                     uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+                } else if f.len() > 4 {
+                    println!("f len 4+");
                 }
             }
             _ => (),
