@@ -5,6 +5,16 @@ use crate::texture;
 use crate::vector::Vector;
 use gl;
 
+struct Group {
+    pub name: String,
+    pub vertices: Vec<f32>,
+    pub uvs: Vec<f32>,
+}
+
+
+
+
+
 #[derive(Debug, Clone)]
 pub struct Model {
     pub vertices: Vec<f32>,

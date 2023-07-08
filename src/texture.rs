@@ -1,6 +1,8 @@
 use crate::load_bmp::Bitmap;
 use gl;
 use std::ffi::c_void;
+extern crate image;
+use std::path::Path;
 
 pub fn texture() {
     // load and create a texture
@@ -16,8 +18,12 @@ pub fn texture() {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
-        let img = Bitmap::open(&String::from("resources/textures/stone.bmp")).unwrap();
+        // let mut img = Bitmap::open(&String::from("resources/barbara/tex/hair.bmp")).unwrap();
+        let mut img = Bitmap::open(&String::from("resources/textures/Airplane.bmp")).unwrap();
         let data = img.get_data().as_slice();
+
+        // let img = image::open(&Path::new("resources/textures/Airplane.bmp")).expect("Failed to load texture");
+        // let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,

@@ -18,23 +18,40 @@ fn get_point(line: Vec<&str>) -> Vec<f32> {
     point
 }
 
-fn get_face(line: Vec<&str>) -> Vec<usize> {
-    let mut face = Vec::new();
+fn get_face(line: Vec<&str>) -> (Vec<usize>, Vec<usize>, Vec<usize>) {
+    let mut face: Vec<usize> = Vec::new();
+    let mut uv: Vec<usize> = Vec::new();
+    let mut vn: Vec<usize> = Vec::new();
+
     for byte in line {
         let parts: Vec<&str> = byte.split("/").collect();
-        let t: usize = match parts[0].parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-        face.push(t);
+        for (i, p) in parts.iter().enumerate() {
+            match p.parse() {
+                Ok(num) => {
+                    if i == 0 {
+                        face.push(num);
+                    }
+                    if i == 1 {
+                        uv.push(num);
+                    }
+                    if i == 2 {
+                        vn.push(num);
+                    }
+                },
+                Err(_) => (),
+            }
+        }
     }
-    face
+    (face, uv, vn)
 }
 
 pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     let mut points = Vec::new();
     let mut faces = Vec::new();
     let mut uvs = Vec::new();
+    let mut uv_points = Vec::new();
+    let mut vns = Vec::new();
+    let mut vts = Vec::new();
 
     let lines = read_lines(file_path.to_string());
     for line in lines {
@@ -49,18 +66,35 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
                 points.push(p);
             }
             "f" => {
-                let f = get_face(s);
+                let (f, uv, vn) = get_face(s);
                 if f.len() == 3 {
                     faces.push(f);
-                    uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
+                    if uv.len() != 0 {
+                        uv_points.append(&mut uv.clone());
+                    } else {
+                        uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
+                    }
                 } else if f.len() == 4 {
                     faces.push(Vec::from([f[0], f[1], f[2]]));
                     faces.push(Vec::from([f[0], f[2], f[3]]));
-                    uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
-                    uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+                    if uv.len() != 0 {
+                        uv_points.append(&mut Vec::from([uv[0], uv[1], uv[2]]));
+                        uv_points.append(&mut Vec::from([uv[0], uv[2], uv[3]]));
+                    } else {
+                        uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
+                        uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+                    }
                 } else if f.len() > 4 {
                     println!("f len 4+");
                 }
+            }
+            "vn" => {
+                let vn = get_point(s);
+                vns.push(vn);
+            }
+            "vt" => {
+                let vt = get_point(s);
+                vts.push(vt);
             }
             _ => (),
         }
@@ -74,5 +108,104 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
             }
         }
     }
+
+    for u in uv_points {
+        for p in &vts[u - 1] {
+            // println!("u{}",u);
+            uvs.push(p.clone());
+        }
+    }
+
+
+//     let v_arr: [f32; 108] = [
+//         -0.5, -0.5, -0.5,
+//          0.5, -0.5, -0.5,
+//          0.5,  0.5, -0.5,
+//          0.5,  0.5, -0.5,
+//         -0.5,  0.5, -0.5,
+//         -0.5, -0.5, -0.5,
+// -0.5, -0.5,  0.5,
+//          0.5, -0.5,  0.5,
+//          0.5,  0.5,  0.5,
+//          0.5,  0.5,  0.5,
+//         -0.5,  0.5,  0.5,
+//         -0.5, -0.5,  0.5,
+// -0.5,  0.5,  0.5,
+//         -0.5,  0.5, -0.5,
+//         -0.5, -0.5, -0.5,
+//         -0.5, -0.5, -0.5,
+//         -0.5, -0.5,  0.5,
+//         -0.5,  0.5,  0.5,
+//  0.5,  0.5,  0.5,
+//          0.5,  0.5, -0.5,
+//          0.5, -0.5, -0.5,
+//          0.5, -0.5, -0.5,
+//          0.5, -0.5,  0.5,
+//          0.5,  0.5,  0.5,
+// -0.5, -0.5, -0.5,
+//          0.5, -0.5, -0.5,
+//          0.5, -0.5,  0.5,
+//          0.5, -0.5,  0.5,
+//         -0.5, -0.5,  0.5,
+//         -0.5, -0.5, -0.5,
+// -0.5,  0.5, -0.5,
+//          0.5,  0.5, -0.5,
+//          0.5,  0.5,  0.5,
+//          0.5,  0.5,  0.5,
+//         -0.5,  0.5,  0.5,
+//         -0.5,  0.5, -0.5,     ];
+
+//         let uv_arr : [f32; 72] = [
+//             0.0, 0.0,
+//             1.0, 0.0,
+//             1.0, 1.0,
+//             1.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 0.0,
+
+
+//             0.0, 0.0,
+//             1.0, 0.0,
+//             1.0, 1.0,
+//             1.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 0.0,
+
+
+//             1.0, 0.0,
+//             1.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 0.0,
+//             1.0, 0.0,
+
+
+//             1.0, 0.0,
+//             1.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 1.0,
+//             0.0, 0.0,
+//             1.0, 0.0,
+
+
+//             0.0, 1.0,
+//             1.0, 1.0,
+//             1.0, 0.0,
+//             1.0, 0.0,
+//             0.0, 0.0,
+//             0.0, 1.0,
+
+
+//             0.0, 1.0,
+//             1.0, 1.0,
+//             1.0, 0.0,
+//             1.0, 0.0,
+//             0.0, 0.0,
+//             0.0, 1.0
+//         ];
+
+    // (Vec::from(v_arr), Vec::from(uv_arr))
+    // println!("v{:?}", vertices);
+    // println!("u{:?}", vertices);
     (vertices, uvs)
 }

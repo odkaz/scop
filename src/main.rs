@@ -55,7 +55,8 @@ fn main() {
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
     let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/genshin_obj/hutao.obj"));
+    models.push(Model::new("resources/obj/Airplane.obj"));
+    // models.push(Model::new("resources/genshin_obj/barb.obj"));
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
@@ -85,7 +86,8 @@ fn main() {
         for (i, m) in models.iter_mut().enumerate() {
             unsafe {
                 // m.set_trans(i as f32, i as f32, i as f32);
-                m.set_rot(0., mvp::timer(), 0.);
+                // m.set_rot(0., mvp::timer(), 0.);
+                // m.set_rot(0.0, 180.0, 0.0);
                 // m.set_scale(0.2, 0.2, 0.2);
                 shader_program.set_mat4(c_str!("model"), &m.get_model());
                 gl::BindVertexArray(m.get_vao());
