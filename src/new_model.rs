@@ -1,44 +1,61 @@
 use crate::buffer::Buffer;
 use crate::matrix::{Matrix, TMatrix4};
-use crate::parse;
+// use crate::parse;
 use crate::texture;
-use crate::vector::Vector;
+// use crate::vector::Vector;
+use crate::render_gl::Program;
 use gl;
-
-struct Group {
-    pub name: String,
-    pub vertices: Vec<f32>,
-    pub uvs: Vec<f32>,
-}
-
-
-
-
+use std::ffi::CStr;
 
 #[derive(Debug, Clone)]
 pub struct Model {
-    pub vertices: Vec<f32>,
-    pub uvs: Vec<f32>,
-    pub normals: Vec<f32>,
-    pub vao: gl::types::GLuint,
-    c: [f32; 3],
-    t: [f32; 3],
-    r: [f32; 3],
-    s: [f32; 3],
+    vertices: Vec<f32>,
+    uvs: Vec<f32>,
+    normals: Vec<f32>,
+    vao: gl::types::GLuint,
+    pos: [f32; 3],
+    rot: [f32; 3],
+    scl: [f32; 3],
+    // cen: [f32; 3],
 }
 
 impl Model {
-    pub fn new(path: &str) -> Model {
-        let (v, uvs, n, vao) = Self::load_vertex(path);
+    pub fn init(v: Vec<f32>, uvs: Vec<f32>, norms: Vec<f32>) -> Model {
+        // let normals = Self::create_normal(&v);
+        let mut vao: gl::types::GLuint = 0;
+        unsafe {
+            gl::GenVertexArrays(1, &mut vao);
+            gl::BindVertexArray(vao);
+            let vertex_buf = Buffer::new(0);
+            vertex_buf.bind(&v);
+            vertex_buf.enable();
+        }
+        let colors: [f32; 9] = [
+            1., 0.5, 0.0, // left
+            0.5, 0.5, 0.0, // right
+            0.5, 0.5, 0.0, // top
+        ];
+        let color_buf = Buffer::new(1);
+        color_buf.bind(&Vec::from(colors));
+        color_buf.enable();
+        let text_buf = Buffer::new(2);
+        text_buf.bind(&uvs);
+        text_buf.enable_texture();
+        texture::texture();
+        let norm_buf = Buffer::new(3);
+        norm_buf.bind(&norms);
+        norm_buf.enable();
+        unsafe {
+            gl::BindVertexArray(0); // Call this when all the bindings are done
+        }
         Model {
-            vertices: v.clone(),
+            vertices: v,
             uvs,
-            normals: n,
+            normals: norms,
             vao,
-            c: Self::create_center(&v),
-            t: [0.0_f32; 3],
-            r: [0.0_f32; 3],
-            s: [1.0_f32; 3],
+            pos: [0.0_f32; 3],
+            rot: [0.0_f32; 3],
+            scl: [1.0_f32; 3],
         }
     }
 
@@ -46,25 +63,6 @@ impl Model {
         unsafe {
             gl::BindVertexArray(0); // Call this when all the bindings are done
         }
-    }
-
-    fn create_normal(v: &Vec<f32>) -> Vec<f32> {
-        let mut res = Vec::new();
-        for row in 0..v.len() / 9 {
-            let i = row * 9;
-            let p0 = [v[i], v[i + 1], v[i + 2]];
-            let p1 = [v[i + 3], v[i + 4], v[i + 5]];
-            let p2 = [v[i + 6], v[i + 7], v[i + 8]];
-            let v0 = Vector::from(p0) - Vector::from(p1);
-            let v1 = Vector::from(p0) - Vector::from(p2);
-            let tmp = Vector::cross_product(&v0, &v1).as_vec();
-            for _ in 0..3 {
-                res.push(tmp[0]);
-                res.push(tmp[1]);
-                res.push(tmp[2]);
-            }
-        }
-        res
     }
 
     fn create_center(v: &Vec<f32>) -> [f32; 3] {
@@ -78,68 +76,31 @@ impl Model {
         [x, y, z]
     }
 
-    fn load_vertex(path: &str) -> (Vec<f32>, Vec<f32>, Vec<f32>, gl::types::GLuint) {
-        let (vertices, uvs) = parse::parse(path);
-        let normals = Self::create_normal(&vertices);
-        let mut vao: gl::types::GLuint = 0;
-        // println!("uvs{:?}", uvs);
-        println!("len{}", uvs.len());
+    pub fn display(&self, shader_program: &Program) {
         unsafe {
-            gl::GenVertexArrays(1, &mut vao);
-            gl::BindVertexArray(vao);
-            let vertex_buf = Buffer::new(0);
-            vertex_buf.bind(&vertices);
-            vertex_buf.enable();
+            shader_program.set_used();
+            shader_program.set_mat4(c_str!("model"), &self.get_model());
+            gl::BindVertexArray(self.get_vao());
+            gl::DrawArrays(gl::TRIANGLES, 0, (self.get_vertices().len() / 3) as i32);
         }
-        let colors: [f32; 9] = [
-            1., 0.5, 0.0, // left
-            0.5, 0.5, 0.0, // right
-            0.5, 0.5, 0.0, // top
-        ];
-        let color_buf = Buffer::new(1);
-        color_buf.bind(&Vec::from(colors));
-        color_buf.enable();
-        // let textures: [f32; 12] = [
-        //     1.0, 1.0,
-        //     1.0, 0.0,
-        //     0.0, 1.0,
-        //     1.0, 0.0,
-        //     0.0, 0.0,
-        //     0.0, 1.0
-        // ];
-        let text_buf = Buffer::new(2);
-        // text_buf.bind(&Vec::from(textures));
-        text_buf.bind(&uvs);
-        text_buf.enable_texture();
-        texture::texture();
-
-        let norm_buf = Buffer::new(3);
-        norm_buf.bind(&normals);
-        norm_buf.enable();
-
-        unsafe {
-            gl::BindVertexArray(0); // Call this when all the bindings are done
-        }
-        (vertices, uvs, normals, vao)
     }
 
     pub fn move_x(&mut self, scale: f32) {
-        let mut buf = self.t.clone();
-        // println!("t{:?}", self.t);
+        let mut buf = self.pos.clone();
         buf[0] = buf[0] + scale;
-        self.t = buf;
+        self.pos = buf;
     }
 
     pub fn move_y(&mut self, scale: f32) {
-        let mut buf = self.t.clone();
+        let mut buf = self.pos.clone();
         buf[1] = buf[1] + scale;
-        self.t = buf;
+        self.pos = buf;
     }
 
     pub fn move_z(&mut self, scale: f32) {
-        let mut buf = self.t.clone();
+        let mut buf = self.pos.clone();
         buf[2] = buf[2] + scale;
-        self.t = buf;
+        self.pos = buf;
     }
 
 
@@ -157,35 +118,36 @@ impl Model {
     }
 
     pub fn get_trans(&self) -> [f32; 3] {
-        self.t
+        self.pos
     }
 
     pub fn set_trans(&mut self, x: f32, y: f32, z: f32) {
-        self.t = [x, y, z];
+        self.pos = [x, y, z];
     }
 
     pub fn set_rot(&mut self, x: f32, y: f32, z: f32) {
-        self.r = [x, y, z];
+        self.rot = [x, y, z];
     }
 
     pub fn set_scale(&mut self, x: f32, y: f32, z: f32) {
-        self.s = [x, y, z];
+        self.scl = [x, y, z];
     }
 
     fn translation(&self) -> TMatrix4<f32> {
-        Matrix::translation(self.t[0], self.t[1], self.t[2])
+        Matrix::translation(self.pos[0], self.pos[1], self.pos[2])
     }
 
     fn rotation(&self) -> TMatrix4<f32> {
-        Matrix::rotation(self.r[0], self.r[1], self.r[2])
+        Matrix::rotation(self.rot[0], self.rot[1], self.rot[2])
     }
 
     fn scale(&self) -> TMatrix4<f32> {
-        Matrix::scale(self.s[0], self.s[1], self.s[2])
+        Matrix::scale(self.scl[0], self.scl[1], self.scl[2])
     }
 
     pub fn get_model(&self) -> TMatrix4<f32> {
-        let mat_center = Matrix::translation(-self.c[0], -self.c[1], -self.c[2]);
-        self.translation() * self.rotation() * self.scale() * mat_center
+        // let mat_center = Matrix::translation(-self.c[0], -self.c[1], -self.c[2]);
+        // self.translation() * self.rotation() * self.scale() * mat_center
+        self.translation() * self.rotation() * self.scale()
     }
 }

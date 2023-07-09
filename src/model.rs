@@ -3,7 +3,9 @@ use crate::matrix::{Matrix, TMatrix4};
 use crate::parse;
 use crate::texture;
 use crate::vector::Vector;
+use crate::render_gl::Program;
 use gl;
+use std::ffi::CStr;
 
 #[derive(Debug, Clone)]
 pub struct Model {
@@ -111,6 +113,15 @@ impl Model {
             gl::BindVertexArray(0); // Call this when all the bindings are done
         }
         (vertices, uvs, normals, vao)
+    }
+
+    pub fn display(&self, shader_program: &Program) {
+        unsafe {
+            shader_program.set_used();
+            shader_program.set_mat4(c_str!("model"), &self.get_model());
+            gl::BindVertexArray(self.get_vao());
+            gl::DrawArrays(gl::TRIANGLES, 0, (self.get_vertices().len() / 3) as i32);
+        }
     }
 
     pub fn move_x(&mut self, scale: f32) {

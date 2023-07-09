@@ -6,6 +6,7 @@ pub mod camera;
 pub mod load_bmp;
 mod macros;
 pub mod matrix;
+// pub mod new_model;
 pub mod model;
 mod mvp;
 mod parse;
@@ -15,6 +16,7 @@ pub mod vector;
 
 use camera::Camera;
 use model::Model;
+// use new_model::Model;
 use render_gl::{Program, Shader};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
@@ -54,6 +56,8 @@ fn main() {
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
     shader_program.set_used();
     // let (vertices, vao) = load_buf();
+    // let mut models: Vec<Model> = parse::parse("resources/obj/Airplane.obj");
+    // let mut models: Vec<Model> = parse::parse("resources/genshin_obj/barb.obj");
     let mut models: Vec<Model> = Vec::new();
     models.push(Model::new("resources/obj/Airplane.obj"));
     // models.push(Model::new("resources/genshin_obj/barb.obj"));
@@ -84,15 +88,12 @@ fn main() {
         }
 
         for (i, m) in models.iter_mut().enumerate() {
-            unsafe {
-                // m.set_trans(i as f32, i as f32, i as f32);
-                // m.set_rot(0., mvp::timer(), 0.);
-                // m.set_rot(0.0, 180.0, 0.0);
-                // m.set_scale(0.2, 0.2, 0.2);
-                shader_program.set_mat4(c_str!("model"), &m.get_model());
-                gl::BindVertexArray(m.get_vao());
-                gl::DrawArrays(gl::TRIANGLES, 0, (m.get_vertices().len() / 3) as i32);
-            }
+            // m.set_trans(i as f32, i as f32, i as f32);
+            // m.set_rot(0., mvp::timer(), 0.);
+            // m.set_rot(0.0, 180.0, 0.0);
+            // m.set_scale(0.2, 0.2, 0.2);
+
+            m.display(&shader_program);
         }
 
         window.gl_swap_window();
