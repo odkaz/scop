@@ -45,6 +45,26 @@ fn get_face(line: Vec<&str>) -> (Vec<usize>, Vec<usize>, Vec<usize>) {
     (face, uv, vn)
 }
 
+fn parse_f(line: Vec<&str>) -> (Vec<usize>, Vec<usize>, Vec<f32>) {
+    let (f, uv, n) = get_face(line);
+    let mut faces = Vec::new();
+    let mut uv_points = Vec::new();
+    let mut uvs = Vec::new();
+    for i in 0..f.len() - 2 {
+        faces.push(f[0] - 1);
+        faces.push(f[i + 1] - 1);
+        faces.push(f[i + 2] - 1);
+        if uv.len() != 0 {
+            uv_points.push(uv[0] - 1);
+            uv_points.push(uv[i + 1] - 1);
+            uv_points.push(uv[i + 2] - 1);
+        } else {
+            uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
+        }
+    }
+    (faces, uv_points, uvs)
+}
+
 pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     let mut points = Vec::new();
     let mut faces = Vec::new();
@@ -66,27 +86,10 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
                 points.push(p);
             }
             "f" => {
-                let (f, uv, vn) = get_face(s);
-                if f.len() == 3 {
-                    faces.push(f);
-                    if uv.len() != 0 {
-                        uv_points.append(&mut uv.clone());
-                    } else {
-                        uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
-                    }
-                } else if f.len() == 4 {
-                    faces.push(Vec::from([f[0], f[1], f[2]]));
-                    faces.push(Vec::from([f[0], f[2], f[3]]));
-                    if uv.len() != 0 {
-                        uv_points.append(&mut Vec::from([uv[0], uv[1], uv[2]]));
-                        uv_points.append(&mut Vec::from([uv[0], uv[2], uv[3]]));
-                    } else {
-                        uvs.append(&mut Vec::from([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]));
-                        uvs.append(&mut Vec::from([0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
-                    }
-                } else if f.len() > 4 {
-                    println!("f len 4+");
-                }
+                let (f, u, mut uv) = parse_f(s);
+                faces.push(f);
+                uv_points.push(u);
+                uvs.append(&mut uv);
             }
             "vn" => {
                 let vn = get_point(s);
@@ -103,17 +106,19 @@ pub fn parse(file_path: &str) -> (Vec<f32>, Vec<f32>) {
     let mut vertices = Vec::new();
     for face in faces {
         for f in face {
-            for point in &points[f - 1] {
+            for point in &points[f] {
                 vertices.push(*point);
             }
         }
     }
 
-    for u in uv_points {
-        for p in &vts[u - 1] {
-            // println!("u{}",u);
-            uvs.push(p.clone());
+    for uvp in uv_points {
+        for u in uvp {
+            for p in &vts[u] {
+                uvs.push(p.clone());
+            }
         }
     }
+
     (vertices, uvs)
 }
