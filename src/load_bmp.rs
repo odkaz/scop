@@ -74,13 +74,13 @@ impl Bitmap {
         let s = &content.as_slice()[data_pos as usize - 54..];
         let mut rgb = Vec::new();
 
-        for h in 0..height as usize {
-            for w in 0..width as usize {
-                let pad = h * width as usize + w;
+        for h in 0..height {
+            for w in 0..width {
+                let pad = (h * width + w) as usize;
+                // let pad = ((height - 1 - h) * width + (width - 1 - w)) as usize;
                 let r = s[3 * pad + 2];
                 let g = s[3 * pad + 1];
                 let b = s[3 * pad];
-                // println!("R:{} G:{} B:{}", r, g, b);
                 rgb.push(r);
                 rgb.push(g);
                 rgb.push(b);

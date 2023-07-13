@@ -4,7 +4,7 @@ use std::ffi::c_void;
 extern crate image;
 // use std::path::Path;
 
-pub fn texture() {
+pub fn texture(path: &String) {
     // load and create a texture
     // -------------------------
     let mut texture = 0;
@@ -12,14 +12,15 @@ pub fn texture() {
         gl::GenTextures(1, &mut texture);
         gl::BindTexture(gl::TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
                                                   // set the texture wrapping parameters
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
-        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_BORDER as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
+        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_BORDER as i32);
         // set texture filtering parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         // let mut img = Bitmap::open(&String::from("resources/barbara/tex/hair.bmp")).unwrap();
-        let mut img = Bitmap::open(&String::from("resources/textures/Airplane.bmp")).unwrap();
+        let mut img = Bitmap::open(path).unwrap();
+        // img.rotate_180();
         let data = img.get_data().as_slice();
 
         // let img = image::open(&Path::new("resources/textures/Airplane.bmp")).expect("Failed to load texture");

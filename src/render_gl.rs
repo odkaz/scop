@@ -41,6 +41,10 @@ impl Program {
             gl::UseProgram(self.id);
         }
     }
+
+    pub unsafe fn set_float(&self, name: &CStr, value: f32) {
+        gl::Uniform1f(gl::GetUniformLocation(self.id, name.as_ptr()), value);
+    }
     pub unsafe fn set_vec3(&self, name: &CStr, x: f32, y: f32, z: f32) {
         gl::Uniform3f(gl::GetUniformLocation(self.id, name.as_ptr()), x, y, z);
     }

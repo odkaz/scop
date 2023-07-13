@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use crate::new_model::Model;
+use crate::model::Model;
 use crate::vector::{Vector, TVector3};
 
 fn read_lines(filename: String) -> io::Lines<BufReader<File>> {

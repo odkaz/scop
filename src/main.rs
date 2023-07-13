@@ -6,23 +6,24 @@ pub mod camera;
 pub mod load_bmp;
 mod macros;
 pub mod matrix;
-// pub mod new_model;
 pub mod model;
+// pub mod model;
 mod mvp;
 mod parse;
+mod new_parse;
 pub mod render_gl;
 pub mod texture;
 pub mod vector;
 
 use camera::Camera;
-use model::Model;
-// use new_model::Model;
+// use model::Model;
+use model::{Model, ModelGroup};
 use render_gl::{Program, Shader};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
 use std::ffi::{CStr, CString};
-use std::time::Duration;
 use vector::TVector3;
+use std::time::{Duration, SystemTime};
 
 const SCR_WIDTH: u32 = 1200;
 const SCR_HEIGHT: u32 = 900;
@@ -55,19 +56,25 @@ fn main() {
         Shader::from_frag_source(&CString::new(include_str!("triangle.frag")).unwrap()).unwrap();
     let shader_program = Program::from_shaders(&[vert_shader, frag_shader]).unwrap();
     shader_program.set_used();
-    // let (vertices, vao) = load_buf();
-    // let mut models: Vec<Model> = parse::parse("resources/obj/Airplane.obj");
-    // let mut models: Vec<Model> = parse::parse("resources/genshin_obj/barb.obj");
-    let mut models: Vec<Model> = Vec::new();
-    models.push(Model::new("resources/obj/Airplane.obj"));
-    // models.push(Model::new("resources/genshin_obj/barb.obj"));
+
+    let now = SystemTime::now();
+    let mut models: ModelGroup = parse::parse("resources/obj/dragon.obj");
+    models.init_texture(&shader_program);
+    match now.elapsed() {
+        Ok(elapsed) => {
+            println!("time: {}ms", elapsed.as_millis());
+        }
+        Err(e) => {
+            println!("Error: {e:?}");
+        }
+    }
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
         TVector3::from([0., 0., 0.]),
         TVector3::from([0., 1., 0.]),
     );
-    while process_events(&mut event_pump, &mut camera, &mut models) {
+    while process_events(&mut event_pump, &mut camera, &mut models, &shader_program) {
         let (w, h) = window.size();
         unsafe {
             gl::Viewport(0, 0, w as i32, h as i32);
@@ -83,18 +90,12 @@ fn main() {
                 c_str!("projection"),
                 &mvp::projection(w as f32, h as f32, 135.),
             );
-            shader_program.set_vec3(c_str!("objectColor"), 1.0, 0.5, 0.31);
+            shader_program.set_vec3(c_str!("objectColor"), 1.0, 1.0, 1.0);
             shader_program.set_vec3(c_str!("lightColor"), 1.0, 1.0, 1.0);
         }
-
-        for (i, m) in models.iter_mut().enumerate() {
-            // m.set_trans(i as f32, i as f32, i as f32);
-            // m.set_rot(0., mvp::timer(), 0.);
-            // m.set_rot(0.0, 180.0, 0.0);
-            // m.set_scale(0.2, 0.2, 0.2);
-
-            m.display(&shader_program);
-        }
+        models.rotate(0.0, mvp::timer(), 0.0);
+        models.scale(0.1, 0.1, 0.1);
+        models.display(&shader_program);
 
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
@@ -105,7 +106,7 @@ fn is_pressed(event_pump: &mut sdl2::EventPump, code: Scancode) -> bool {
     event_pump.keyboard_state().is_scancode_pressed(code)
 }
 
-fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models: &mut Vec<Model>) -> bool {
+fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models: &mut ModelGroup, shader_program: &Program) -> bool {
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. }
@@ -113,6 +114,12 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
                 keycode: Some(Keycode::Escape),
                 ..
             } => return false,
+            Event::KeyDown {
+                keycode: Some(Keycode::T),
+                ..
+             } => {
+                models.invert_texture(shader_program);
+             },
             _ => {}
         }
     }
@@ -136,16 +143,16 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
         camera.move_up(-VEL);
     }
     if is_pressed(event_pump, Scancode::Right) {
-        models[0].move_x(VEL);
+        models.move_x(VEL);
     }
     if is_pressed(event_pump, Scancode::Left) {
-        models[0].move_x(-VEL);
+        models.move_x(-VEL);
     }
     if is_pressed(event_pump, Scancode::Up) {
-        models[0].move_z(VEL);
+        models.move_z(VEL);
     }
     if is_pressed(event_pump, Scancode::Down) {
-        models[0].move_z(-VEL);
+        models.move_z(-VEL);
     }
 
 
