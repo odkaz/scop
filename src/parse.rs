@@ -104,11 +104,13 @@ fn create_normal(v: &Vec<f32>) -> Vec<f32> {
     res
 }
 
-fn find_texture(paths: Vec<&str>, mtl_name: String) -> String {
+fn find_texture(paths: Vec<String>, mtl_name: String) -> String {
     let mut res = String::from("");
     let mut flag = false;
     for path in paths {
-        let lines = read_lines(path.to_string());
+        let mut mtl = String::from("resources/mtl/");
+        mtl.push_str(&path);
+        let lines = read_lines(mtl);
         for line in lines {
             let str1 = line.unwrap();
             let s: Vec<&str> = str1.split_whitespace().collect();
@@ -125,7 +127,10 @@ fn find_texture(paths: Vec<&str>, mtl_name: String) -> String {
                 }
                 "map_Kd" => {
                     if flag {
-                        return s[1].to_string()
+                        // return s[1].to_string()
+                        let mut text = String::from("resources/textures/");
+                        text.push_str(s[1]);
+                        return text
                     }
                 }
                 _ => (),
@@ -140,6 +145,7 @@ struct Group {
     faces: Vec<Vec<usize>>,
     uv_points: Vec<Vec<usize>>,
     n_points: Vec<Vec<usize>>,
+    texture: String,
 }
 
 pub fn parse(file_path: &str) -> ModelGroup {
@@ -186,11 +192,15 @@ pub fn parse(file_path: &str) -> ModelGroup {
             }
             "g" => {
                 if faces.len() != 0 {
+                    if texture == "" {
+                        texture = String::from("resources/textures/metal.bmp");
+                    }
                     let g = Group {
                         faces,
                         name: g_name,
                         uv_points,
                         n_points,
+                        texture: texture.clone(),
                     };
                     groups.push(g);
                     faces = Vec::new();
@@ -198,13 +208,14 @@ pub fn parse(file_path: &str) -> ModelGroup {
                     n_points = Vec::new();
                 }
                 g_name = s[1].to_string();
-                // g_names.push(s[1]);
             }
             "mtllib" => {
-                mtl_paths = s[1..].to_vec();
+                for i in s[1..].iter() {
+                    mtl_paths.push(i.to_string());
+                }
             }
             "usemtl" => {
-                // texture = find_texture(mtl_paths, s[1].to_string());
+                texture = find_texture(mtl_paths.clone(), s[1].to_string());
             }
             _ => (),
         }
@@ -215,6 +226,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
         name: g_name,
         uv_points,
         n_points,
+        texture,
     };
     groups.push(g);
 
@@ -257,7 +269,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
         } else {
             norms = create_normal(&vertices);
         }
-        let m = Model::init(vertices, uvs, norms);
+        let m = Model::init(vertices, uvs, norms, g.texture);
         models.push(m);
     }
     ModelGroup::new(models)

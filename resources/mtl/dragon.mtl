@@ -12,5 +12,5 @@ newmtl CH_NPC_MOB_LWyvern_MI_NDY_ncl1_1
 	Kd 0.8000 0.8000 0.8000
 	Ks 0.0200 0.0200 0.0200
 	Ke 0.0000 0.0000 0.0000
-	map_Ka resources/textures/dragon.bmp
-	map_Kd resources/textures/dragon.bmp
+	map_Ka dragon.bmp
+	map_Kd dragon.bmp

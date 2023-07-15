@@ -10,7 +10,7 @@ pub mod model;
 // pub mod model;
 mod mvp;
 mod parse;
-mod new_parse;
+// mod new_parse;
 pub mod render_gl;
 pub mod texture;
 pub mod vector;

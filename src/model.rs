@@ -123,7 +123,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn init(v: Vec<f32>, uvs: Vec<f32>, norms: Vec<f32>) -> Model {
+    pub fn init(v: Vec<f32>, uvs: Vec<f32>, norms: Vec<f32>, tex: String) -> Model {
         // let normals = Self::create_normal(&v);
         let mut vao: gl::types::GLuint = 0;
         unsafe {
@@ -144,7 +144,7 @@ impl Model {
         let text_buf = Buffer::new(2);
         text_buf.bind(&uvs);
         text_buf.enable_texture();
-        texture::texture(&String::from("resources/textures/dragon.bmp"));
+        texture::texture(&tex);
         let norm_buf = Buffer::new(3);
         norm_buf.bind(&norms);
         norm_buf.enable();
@@ -201,8 +201,6 @@ impl Model {
         buf[2] = buf[2] + scale;
         self.pos = buf;
     }
-
-
 
     pub fn get_vertices(&self) -> Vec<f32> {
         self.vertices.clone()

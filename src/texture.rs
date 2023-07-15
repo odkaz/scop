@@ -1,7 +1,6 @@
 use crate::load_bmp::Bitmap;
 use gl;
 use std::ffi::c_void;
-extern crate image;
 // use std::path::Path;
 
 pub fn texture(path: &String) {
