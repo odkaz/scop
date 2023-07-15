@@ -190,11 +190,12 @@ pub fn parse(file_path: &str) -> ModelGroup {
                 let vt = get_point(s, 2);
                 vts.push(vt);
             }
-            "g" => {
+            "g" | "o" | "s" => {
                 if faces.len() != 0 {
                     if texture == "" {
                         texture = String::from("resources/textures/metal.bmp");
                     }
+                    println!("text:{}", texture);
                     let g = Group {
                         faces,
                         name: g_name,
@@ -209,6 +210,27 @@ pub fn parse(file_path: &str) -> ModelGroup {
                 }
                 g_name = s[1].to_string();
             }
+            // "s" => {
+            //     //same as g
+            //     if faces.len() != 0 {
+            //         if texture == "" {
+            //             texture = String::from("resources/textures/metal.bmp");
+            //         }
+            //         println!("text:{}", texture);
+            //         let g = Group {
+            //             faces,
+            //             name: g_name,
+            //             uv_points,
+            //             n_points,
+            //             texture: texture.clone(),
+            //         };
+            //         groups.push(g);
+            //         faces = Vec::new();
+            //         uv_points = Vec::new();
+            //         n_points = Vec::new();
+            //     }
+            //     g_name = s[1].to_string();
+            // }
             "mtllib" => {
                 for i in s[1..].iter() {
                     mtl_paths.push(i.to_string());
@@ -219,6 +241,9 @@ pub fn parse(file_path: &str) -> ModelGroup {
             }
             _ => (),
         }
+    }
+    if texture == "" {
+        texture = String::from("resources/textures/barbara/skin.bmp");
     }
 
     let g = Group {
@@ -269,8 +294,12 @@ pub fn parse(file_path: &str) -> ModelGroup {
         } else {
             norms = create_normal(&vertices);
         }
+        if g.name == "jacket" || g.name == "legs" || g.name == "skirt" {
+
+        }
         let m = Model::init(vertices, uvs, norms, g.texture);
         models.push(m);
+
     }
     ModelGroup::new(models)
 }

@@ -58,7 +58,7 @@ fn main() {
     shader_program.set_used();
 
     let now = SystemTime::now();
-    let mut models: ModelGroup = parse::parse("resources/obj/dragon.obj");
+    let mut models: ModelGroup = parse::parse("resources/obj/square.obj");
     models.init_texture(&shader_program);
     match now.elapsed() {
         Ok(elapsed) => {
@@ -94,7 +94,7 @@ fn main() {
             shader_program.set_vec3(c_str!("lightColor"), 1.0, 1.0, 1.0);
         }
         models.rotate(0.0, mvp::timer(), 0.0);
-        models.scale(0.1, 0.1, 0.1);
+        // models.scale(0.1, 0.1, 0.1);
         models.display(&shader_program);
 
         window.gl_swap_window();

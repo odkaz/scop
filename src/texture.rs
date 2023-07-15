@@ -18,6 +18,7 @@ pub fn texture(path: &String) {
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
         // load image, create texture and generate mipmaps
         // let mut img = Bitmap::open(&String::from("resources/barbara/tex/hair.bmp")).unwrap();
+        println!("path:{}",path);
         let mut img = Bitmap::open(path).unwrap();
         // img.rotate_180();
         let data = img.get_data().as_slice();

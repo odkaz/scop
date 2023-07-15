@@ -119,6 +119,7 @@ pub struct Model {
     pos: [f32; 3],
     rot: [f32; 3],
     scl: [f32; 3],
+    tex: String,
     // cen: [f32; 3],
 }
 
@@ -159,6 +160,7 @@ impl Model {
             pos: [0.0_f32; 3],
             rot: [0.0_f32; 3],
             scl: [1.0_f32; 3],
+            tex,
         }
     }
 
