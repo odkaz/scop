@@ -60,6 +60,9 @@ impl Bitmap {
         // let mut image_size: u32 = 0;
         let width: u32 = u32::from_ne_bytes(header_buf[18..22].try_into().unwrap());
         let height: u32 = u32::from_ne_bytes(header_buf[22..26].try_into().unwrap());
+
+        // let per_pixel = u16::from_ne_bytes(header_buf[28..30].try_into().unwrap());
+        // println!("per:{}", per_pixel);
         if data_pos == 0 {
             data_pos = 54;
         }

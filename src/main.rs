@@ -58,8 +58,8 @@ fn main() {
     shader_program.set_used();
 
     let now = SystemTime::now();
-    let mut models: ModelGroup = parse::parse("resources/obj/square.obj");
-    models.init_texture(&shader_program);
+    let mut models: ModelGroup = parse::parse("resources/obj/barbara.obj");
+    models.texture_on(&shader_program);
     match now.elapsed() {
         Ok(elapsed) => {
             println!("time: {}ms", elapsed.as_millis());
@@ -74,6 +74,21 @@ fn main() {
         TVector3::from([0., 0., 0.]),
         TVector3::from([0., 1., 0.]),
     );
+
+    let text_id = models.init_textures(&shader_program);
+
+    // let tex1 = texture::texture(&String::from("resources/textures/barbara/face.bmp"));
+    // let tex2 = texture::texture(&String::from("resources/textures/barbara/body.bmp"));
+    // unsafe {
+    //     shader_program.set_float(c_str!("tex1Intensity"), 0.5);
+    //     shader_program.set_float(c_str!("tex2Intensity"), 0.5);
+
+    //     let tex1_loc  = gl::GetUniformLocation( shader_program.id(), c_str!("texture1").as_ptr());
+    //     let tex2_loc  = gl::GetUniformLocation( shader_program.id(), c_str!("texture2").as_ptr());
+    //     gl::Uniform1i(tex1_loc, 0);
+    //     gl::Uniform1i(tex2_loc, 1);
+    // }
+
     while process_events(&mut event_pump, &mut camera, &mut models, &shader_program) {
         let (w, h) = window.size();
         unsafe {
@@ -95,6 +110,20 @@ fn main() {
         }
         models.rotate(0.0, mvp::timer(), 0.0);
         // models.scale(0.1, 0.1, 0.1);
+
+
+        unsafe {
+            for (i, tid) in text_id.iter().enumerate() {
+                gl::ActiveTexture(gl::TEXTURE0 + i as u32);
+                gl::BindTexture(gl::TEXTURE_2D, tid.clone());
+            }
+            // gl::ActiveTexture(gl::TEXTURE0);
+            // gl::BindTexture(gl::TEXTURE_2D, tex1);
+            // gl::ActiveTexture(gl::TEXTURE0 + 1);
+            // gl::BindTexture(gl::TEXTURE_2D, tex2);
+        }
+        
+        
         models.display(&shader_program);
 
         window.gl_swap_window();

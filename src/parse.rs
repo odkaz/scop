@@ -195,7 +195,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
                     if texture == "" {
                         texture = String::from("resources/textures/metal.bmp");
                     }
-                    println!("text:{}", texture);
+                    // println!("text:{}", texture);
                     let g = Group {
                         faces,
                         name: g_name,
@@ -243,7 +243,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
         }
     }
     if texture == "" {
-        texture = String::from("resources/textures/barbara/skin.bmp");
+        texture = String::from("resources/textures/barbara/body.bmp");
     }
 
     let g = Group {
@@ -294,12 +294,11 @@ pub fn parse(file_path: &str) -> ModelGroup {
         } else {
             norms = create_normal(&vertices);
         }
-        if g.name == "jacket" || g.name == "legs" || g.name == "skirt" {
+        // if g.name == "face1" || g.name == "legs" || g.name == "skirt" {
 
-        }
+        // }
         let m = Model::init(vertices, uvs, norms, g.texture);
         models.push(m);
-
     }
     ModelGroup::new(models)
 }

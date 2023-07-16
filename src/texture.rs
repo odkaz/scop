@@ -3,7 +3,7 @@ use gl;
 use std::ffi::c_void;
 // use std::path::Path;
 
-pub fn texture(path: &String) {
+pub fn texture(path: &String) -> gl::types::GLuint{
     // load and create a texture
     // -------------------------
     let mut texture = 0;
@@ -16,9 +16,7 @@ pub fn texture(path: &String) {
         // set texture filtering parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-        // load image, create texture and generate mipmaps
-        // let mut img = Bitmap::open(&String::from("resources/barbara/tex/hair.bmp")).unwrap();
-        println!("path:{}",path);
+        // println!("path:{}",path);
         let mut img = Bitmap::open(path).unwrap();
         // img.rotate_180();
         let data = img.get_data().as_slice();
@@ -38,4 +36,5 @@ pub fn texture(path: &String) {
         );
         gl::GenerateMipmap(gl::TEXTURE_2D);
     }
+    texture
 }

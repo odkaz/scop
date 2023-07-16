@@ -5,7 +5,7 @@ use crate::texture;
 // use crate::vector::Vector;
 use crate::render_gl::Program;
 use gl;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 
 #[derive(Debug, Clone)]
 pub struct ModelGroup {
@@ -14,29 +14,78 @@ pub struct ModelGroup {
     rot: [f32; 3],
     scl: [f32; 3],
     center: [f32; 3],
-    texture: bool,
+    text_bool: bool,
+    textures: Vec<String>,
 }
 
 impl ModelGroup {
     pub fn new(models: Vec<Model>) -> Self {
         let mut verticies = Vec::new();
+        let mut textures = Vec::new();
         for m in &models {
             verticies.append(&mut m.get_vertices());
+            if !(textures.iter().any(|c| c == &m.get_texture())) {
+                textures.push(m.get_texture());
+            }
         }
+        // init_textures()
         ModelGroup {
             models: models,
             pos: [0.0_f32; 3],
             rot: [0.0_f32; 3],
             scl: [1.0_f32; 3],
             center: Self::create_center(&verticies),
-            texture: true,
+            text_bool: true,
+            textures,
         }
     }
 
     pub fn display(&self, shader_program: &Program) {
-        for m in &self.models {
-            m.display(shader_program, self.center);
+        let name_list = [
+            "tex1Intensity",
+            "tex2Intensity",
+            "tex3Intensity",
+            "tex4Intensity",
+            "tex5Intensity",
+        ];
+        //activate all textures
+        unsafe {
+            for m in &self.models {
+                for (i, item) in self.textures.iter().enumerate() {
+                    let cname = CString::new(name_list[i]).expect("CString::new failed");
+
+                    if item == &m.get_texture() {
+                        shader_program.set_float(&cname, 1.0);
+                    } else {
+                        shader_program.set_float(&cname, 0.0);
+                    }
+                }
+                m.display(shader_program, self.center);
+            }
         }
+
+    }
+
+    pub fn init_textures(&self, shader_program: &Program) -> Vec<u32> {
+        let mut id = Vec::new();
+        let mut name_list = [
+            "texture1",
+            "texture2",
+            "texture3",
+            "texture4",
+            "texture5",
+        ];
+
+        for (i, t) in self.textures.clone().iter().enumerate() {
+            let tex = texture::texture(&t);
+            unsafe {
+                let cname = CString::new(name_list[i]).expect("CString::new failed");
+                let tex_loc  = gl::GetUniformLocation( shader_program.id(), cname.as_ptr());
+                gl::Uniform1i(tex_loc, i.try_into().unwrap());
+            }
+            id.push(tex);
+        }
+        id
     }
 
     fn create_center(v: &Vec<f32>) -> [f32; 3] {
@@ -86,24 +135,24 @@ impl ModelGroup {
         }
     }
 
-    pub fn init_texture(&mut self, shader_program: &Program) {
+    pub fn texture_on(&mut self, shader_program: &Program) {
         for m in &mut self.models {
             m.set_texture_intensity(shader_program, 1.0);
         }
-        self.texture = true;
+        self.text_bool = true;
     }
 
     pub fn invert_texture(&mut self, shader_program: &Program) {
-        if self.texture {
+        if self.text_bool {
             for m in &mut self.models {
                 m.set_texture_intensity(shader_program, 0.0);
             }
-            self.texture = false;
+            self.text_bool = false;
         } else {
             for m in &mut self.models {
                 m.set_texture_intensity(shader_program, 1.0);
             }
-            self.texture = true;
+            self.text_bool = true;
         }
 
     }
@@ -119,7 +168,7 @@ pub struct Model {
     pos: [f32; 3],
     rot: [f32; 3],
     scl: [f32; 3],
-    tex: String,
+    texture: String,
     // cen: [f32; 3],
 }
 
@@ -145,7 +194,7 @@ impl Model {
         let text_buf = Buffer::new(2);
         text_buf.bind(&uvs);
         text_buf.enable_texture();
-        texture::texture(&tex);
+        //texture::texture(&tex);
         let norm_buf = Buffer::new(3);
         norm_buf.bind(&norms);
         norm_buf.enable();
@@ -160,7 +209,7 @@ impl Model {
             pos: [0.0_f32; 3],
             rot: [0.0_f32; 3],
             scl: [1.0_f32; 3],
-            tex,
+            texture: tex,
         }
     }
 
@@ -218,6 +267,10 @@ impl Model {
 
     pub fn get_trans(&self) -> [f32; 3] {
         self.pos
+    }
+
+    pub fn get_texture(&self) -> String {
+        self.texture.clone()
     }
 
     pub fn set_trans(&mut self, x: f32, y: f32, z: f32) {
