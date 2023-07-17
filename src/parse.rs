@@ -4,7 +4,7 @@ use crate::model::{Model, ModelGroup};
 use crate::vector::{Vector};
 
 fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
-    let file = File::open(filename).unwrap();
+    let file = File::open(filename.clone()).expect(&format!("{}{}", "not found: ", &filename));
     return io::BufReader::new(file).lines();
 }
 
@@ -140,6 +140,7 @@ fn find_texture(paths: Vec<String>, mtl_name: String) -> String {
     res
 }
 
+#[derive(Debug)]
 struct Group {
     name: String,
     faces: Vec<Vec<usize>>,
@@ -243,7 +244,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
         }
     }
     if texture == "" {
-        texture = String::from("resources/textures/barbara/body.bmp");
+        texture = String::from("resources/textures/metal.bmp");
     }
 
     let g = Group {
@@ -277,7 +278,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
                 }
             }
         } else {
-            for _ in 0..g.faces.len() {
+            for _ in 0..vertices.len() / 9 {
                 uvs.append(&mut Vec::from([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]));
             }
         }
@@ -294,9 +295,6 @@ pub fn parse(file_path: &str) -> ModelGroup {
         } else {
             norms = create_normal(&vertices);
         }
-        // if g.name == "face1" || g.name == "legs" || g.name == "skirt" {
-
-        // }
         let m = Model::init(vertices, uvs, norms, g.texture);
         models.push(m);
     }

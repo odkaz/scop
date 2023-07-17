@@ -118,21 +118,28 @@ impl ModelGroup {
     }
 
     pub fn translate(&mut self, x: f32, y: f32, z: f32) {
+        self.pos = [x, y, z];
         for m in &mut self.models {
             m.set_trans(x, y, z);
         }
     }
 
     pub fn rotate(&mut self, x: f32, y: f32, z: f32) {
+        self.rot = [x, y, z];
         for m in &mut self.models {
             m.set_rot(x, y, z);
         }
     }
 
     pub fn scale(&mut self, x: f32, y: f32, z: f32) {
+        self.scl = [x, y, z];
         for m in &mut self.models {
             m.set_scale(x, y, z);
         }
+    }
+
+    pub fn get_scale(&self) -> [f32; 3] {
+        self.scl
     }
 
     pub fn texture_on(&mut self, shader_program: &Program) {

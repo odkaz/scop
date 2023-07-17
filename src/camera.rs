@@ -14,14 +14,8 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(position: TVector3<f32>, target: TVector3<f32>, up: TVector3<f32>) -> Camera {
-        // let direction = (target.clone() - position.clone()).normalize();
         let yaw: f32 = -90.0;
         let pitch: f32 = 0.0;
-        // let dir = [
-        //     yaw.to_radians().cos() * pitch.to_radians().cos(),
-        //     pitch.to_radians().sin(),
-        //     yaw.to_radians().sin() * pitch.to_radians().cos(),
-        // ];
         let direction = get_direction(yaw, pitch);
         Camera {
             pos: position.clone(),
@@ -61,20 +55,16 @@ impl Camera {
         self.pos = self.pos.clone() + buf;
     }
 
-    pub fn look_right(&mut self, scale: f32) {
-        self.yaw = self.yaw + scale;
+    pub fn look_dir(&mut self, y: f32, p: f32) {
+        self.yaw = self.yaw + y;
+        self.pitch = self.pitch + p;
         self.dir = get_direction(self.yaw, self.pitch);
-        self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
+        self.right = Vector::from([
+            f32::cos(self.yaw.to_radians() - std::f32::consts::PI / 2.0),
+            0.0,
+            f32::sin(self.yaw.to_radians() - std::f32::consts::PI / 2.0),
+        ]);
         self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
-        println!("yaw{}", self.yaw);
-    }
-
-    pub fn look_up(&mut self, scale: f32) {
-        self.pitch = self.pitch + scale;
-        self.dir = get_direction(self.yaw, self.pitch);
-        self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
-        self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
-        println!("pitch{}", self.pitch);
     }
 
 }
@@ -121,8 +111,8 @@ impl Camera {
 
     pub fn look_at(&mut self) -> TMatrix4<f32> {
         // self.dir = (self.pos.clone() - self.dir.clone()).normalize();
-        self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
-        self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
+        // self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
+        // self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
         Camera::view_matrix(
             self.right.clone(),
             self.up.clone(),

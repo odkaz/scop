@@ -3,7 +3,7 @@ NAME := scop
 $(NAME): all
 
 all:
-	cargo run
+	cargo run "resources/obj/dragon.obj"
 
 clean:
 	cargo clean

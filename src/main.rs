@@ -30,6 +30,11 @@ const SCR_WIDTH: u32 = 1200;
 const SCR_HEIGHT: u32 = 900;
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() != 2 {
+        println!("argument not correct");
+        return
+    }
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
     let gl_attr = video_subsystem.gl_attr();
@@ -59,16 +64,9 @@ fn main() {
     shader_program.set_used();
 
     let now = SystemTime::now();
-    let mut models: ModelGroup = parse::parse("resources/obj/barbara.obj");
+    let mut models: ModelGroup = parse::parse(&args[1]);
     models.texture_on(&shader_program);
-    match now.elapsed() {
-        Ok(elapsed) => {
-            println!("time: {}ms", elapsed.as_millis());
-        }
-        Err(e) => {
-            println!("Error: {e:?}");
-        }
-    }
+
 
     let mut camera = Camera::new(
         TVector3::from([0., 0., 10.]),
@@ -95,6 +93,15 @@ fn main() {
         last_y: 0,
     };
 
+    match now.elapsed() {
+        Ok(elapsed) => {
+            println!("parse time: {}ms", elapsed.as_millis());
+        }
+        Err(e) => {
+            println!("Error: {e:?}");
+        }
+    }
+
     while process_events(&mut event_pump, &mut camera, &mut models, &shader_program, &mut mouse) {
         let (w, h) = window.size();
         unsafe {
@@ -115,6 +122,12 @@ fn main() {
             shader_program.set_vec3(c_str!("lightColor"), 1.0, 1.0, 1.0);
         }
         models.rotate(0.0, mvp::timer(), 0.0);
+        // camera.look_right(3.0 * f32::sin(mvp::timer()));
+        // camera.look_dir(mvp::timer() / 60.0, mvp::timer() / 60.0);
+        // camera.look_right(mvp::timer() / 60.0);
+        // camera.look_up(mvp::timer() / 60.0);
+        // camera.look_up(3.0 * f32::cos(mvp::timer()));
+
         // models.scale(0.1, 0.1, 0.1);
 
 
@@ -128,8 +141,8 @@ fn main() {
             // gl::ActiveTexture(gl::TEXTURE0 + 1);
             // gl::BindTexture(gl::TEXTURE_2D, tex2);
         }
-        
-        
+
+
         models.display(&shader_program);
 
         window.gl_swap_window();
@@ -174,7 +187,6 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
                 models.invert_texture(shader_program);
             },
             Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => {
-                println!("mouse pressed");
                 mouse.last_x = x;
                 mouse.last_y = y;
             },
@@ -216,6 +228,15 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
     if is_pressed(event_pump, Scancode::Down) {
         models.move_z(-VEL);
     }
+    if is_pressed(event_pump, Scancode::Equals) {
+        let s = models.get_scale();
+        models.scale(s[0] * 1.1, s[1] * 1.1,  s[2] * 1.1);
+
+    }
+    if is_pressed(event_pump, Scancode::Minus) {
+        let s = models.get_scale();
+        models.scale(s[0] * 0.9, s[1] * 0.9,  s[2] * 0.9);
+    }
 
     if is_a_pressed(&event_pump) {
         // println!("a pressed");
@@ -225,8 +246,10 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
         let scale = 0.1;
         let diff_x = (x - mouse.last_x) as f32 * scale;
         let diff_y = (y - mouse.last_y) as f32 * scale;
-        camera.look_right(diff_x);
-        camera.look_up(diff_y);
+        camera.look_dir(diff_x, diff_y);
+        // camera.look_up(diff_y);
+
+        // camera.look_right(diff_x);
         mouse.last_x = x;
         mouse.last_y = y;
         // println!("left pressed");

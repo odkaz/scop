@@ -16,7 +16,6 @@ pub fn texture(path: &String) -> gl::types::GLuint{
         // set texture filtering parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-        // println!("path:{}",path);
         let mut img = Bitmap::open(path).unwrap();
         // img.rotate_180();
         let data = img.get_data().as_slice();

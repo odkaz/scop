@@ -6,11 +6,11 @@ newmtl 13006_Blue_Tang_v1
 	Ni 1.5000
 	d 1.0000
 	Tr 0.0000
-	Tf 1.0000 1.0000 1.0000 
+	Tf 1.0000 1.0000 1.0000
 	illum 2
 	Ka 1.0000 1.0000 1.0000
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.2700 0.2700 0.2700
 	Ke 0.0000 0.0000 0.0000
-	map_Ka 13006_Blue_Tang_v1_diff.jpg
-	map_Kd 13006_Blue_Tang_v1_diff.jpg
+	map_Ka blue_fish.bmp
+	map_Kd blue_fish.bmp
