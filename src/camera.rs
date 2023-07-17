@@ -8,19 +8,40 @@ pub struct Camera {
     dir: TVector3<f32>,
     right: TVector3<f32>,
     up: TVector3<f32>,
+    yaw: f32,
+    pitch: f32,
 }
 
 impl Camera {
     pub fn new(position: TVector3<f32>, target: TVector3<f32>, up: TVector3<f32>) -> Camera {
-        let direction = (target.clone() - position.clone()).normalize();
+        // let direction = (target.clone() - position.clone()).normalize();
+        let yaw: f32 = -90.0;
+        let pitch: f32 = 0.0;
+        // let dir = [
+        //     yaw.to_radians().cos() * pitch.to_radians().cos(),
+        //     pitch.to_radians().sin(),
+        //     yaw.to_radians().sin() * pitch.to_radians().cos(),
+        // ];
+        let direction = get_direction(yaw, pitch);
         Camera {
             pos: position.clone(),
             target: target.clone(),
             dir: direction.clone(),
             right: Vector::cross_product(&up, &direction).normalize(),
             up: up,
+            yaw,
+            pitch,
         }
     }
+}
+
+fn get_direction(yaw: f32, pitch: f32) -> TVector3<f32> {
+    let dir = [
+        yaw.to_radians().cos() * pitch.to_radians().cos(),
+        pitch.to_radians().sin(),
+        yaw.to_radians().sin() * pitch.to_radians().cos(),
+    ];
+    Vector::from(dir).normalize()
 }
 
 impl Camera {
@@ -39,6 +60,23 @@ impl Camera {
         buf.scl(scale);
         self.pos = self.pos.clone() + buf;
     }
+
+    pub fn look_right(&mut self, scale: f32) {
+        self.yaw = self.yaw + scale;
+        self.dir = get_direction(self.yaw, self.pitch);
+        self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
+        self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
+        println!("yaw{}", self.yaw);
+    }
+
+    pub fn look_up(&mut self, scale: f32) {
+        self.pitch = self.pitch + scale;
+        self.dir = get_direction(self.yaw, self.pitch);
+        self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
+        self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
+        println!("pitch{}", self.pitch);
+    }
+
 }
 
 impl Camera {

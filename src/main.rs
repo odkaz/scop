@@ -21,6 +21,7 @@ use model::{Model, ModelGroup};
 use render_gl::{Program, Shader};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
+use sdl2::mouse::MouseButton;
 use std::ffi::{CStr, CString};
 use vector::TVector3;
 use std::time::{Duration, SystemTime};
@@ -88,8 +89,13 @@ fn main() {
     //     gl::Uniform1i(tex1_loc, 0);
     //     gl::Uniform1i(tex2_loc, 1);
     // }
+    let mut mouse = Mouse {
+        pressed: false,
+        last_x: 0,
+        last_y: 0,
+    };
 
-    while process_events(&mut event_pump, &mut camera, &mut models, &shader_program) {
+    while process_events(&mut event_pump, &mut camera, &mut models, &shader_program, &mut mouse) {
         let (w, h) = window.size();
         unsafe {
             gl::Viewport(0, 0, w as i32, h as i32);
@@ -131,11 +137,29 @@ fn main() {
     }
 }
 
+struct Mouse {
+    pub pressed: bool,
+    pub last_x: i32,
+    pub last_y: i32,
+}
+
 fn is_pressed(event_pump: &mut sdl2::EventPump, code: Scancode) -> bool {
     event_pump.keyboard_state().is_scancode_pressed(code)
 }
 
-fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models: &mut ModelGroup, shader_program: &Program) -> bool {
+fn is_a_pressed(e: &sdl2::EventPump) -> bool {
+    e.mouse_state().left()
+}
+
+fn is_left_pressed(e: &sdl2::EventPump) -> bool {
+    e.mouse_state().is_mouse_button_pressed(MouseButton::Left)
+}
+
+fn get_mouse_pos(e: &sdl2::EventPump) -> (i32, i32) {
+    (e.mouse_state().x(), e.mouse_state().y())
+}
+
+fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models: &mut ModelGroup, shader_program: &Program, mouse: &mut Mouse) -> bool {
     for event in event_pump.poll_iter() {
         match event {
             sdl2::event::Event::Quit { .. }
@@ -146,9 +170,18 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
             Event::KeyDown {
                 keycode: Some(Keycode::T),
                 ..
-             } => {
+            } => {
                 models.invert_texture(shader_program);
-             },
+            },
+            Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => {
+                println!("mouse pressed");
+                mouse.last_x = x;
+                mouse.last_y = y;
+            },
+            // Event::MouseButtonUp { timestamp, window_id, which, mouse_btn, clicks, x, y } => {
+            //     println!("mouse released");
+            // },
+
             _ => {}
         }
     }
@@ -184,6 +217,20 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
         models.move_z(-VEL);
     }
 
+    if is_a_pressed(&event_pump) {
+        // println!("a pressed");
+    }
+    if is_left_pressed(&event_pump) {
+        let (x, y) = get_mouse_pos(event_pump);
+        let scale = 0.1;
+        let diff_x = (x - mouse.last_x) as f32 * scale;
+        let diff_y = (y - mouse.last_y) as f32 * scale;
+        camera.look_right(diff_x);
+        camera.look_up(diff_y);
+        mouse.last_x = x;
+        mouse.last_y = y;
+        // println!("left pressed");
+    }
 
     return true;
 }
