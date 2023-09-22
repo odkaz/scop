@@ -7,17 +7,14 @@ pub mod load_bmp;
 mod macros;
 pub mod matrix;
 pub mod model;
-// pub mod model;
 mod mvp;
 mod parse;
-// mod new_parse;
 pub mod render_gl;
 pub mod texture;
 pub mod vector;
 
 use camera::Camera;
-// use model::Model;
-use model::{Model, ModelGroup};
+use model::ModelGroup;
 use render_gl::{Program, Shader};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
@@ -75,20 +72,8 @@ fn main() {
     );
 
     let text_id = models.init_textures(&shader_program);
-
-    // let tex1 = texture::texture(&String::from("resources/textures/barbara/face.bmp"));
-    // let tex2 = texture::texture(&String::from("resources/textures/barbara/body.bmp"));
-    // unsafe {
-    //     shader_program.set_float(c_str!("tex1Intensity"), 0.5);
-    //     shader_program.set_float(c_str!("tex2Intensity"), 0.5);
-
-    //     let tex1_loc  = gl::GetUniformLocation( shader_program.id(), c_str!("texture1").as_ptr());
-    //     let tex2_loc  = gl::GetUniformLocation( shader_program.id(), c_str!("texture2").as_ptr());
-    //     gl::Uniform1i(tex1_loc, 0);
-    //     gl::Uniform1i(tex2_loc, 1);
-    // }
     let mut mouse = Mouse {
-        pressed: false,
+        // pressed: false,
         last_x: 0,
         last_y: 0,
     };
@@ -122,36 +107,19 @@ fn main() {
             shader_program.set_vec3(c_str!("lightColor"), 1.0, 1.0, 1.0);
         }
         models.rotate(0.0, mvp::timer(), 0.0);
-        // camera.look_right(3.0 * f32::sin(mvp::timer()));
-        // camera.look_dir(mvp::timer() / 60.0, mvp::timer() / 60.0);
-        // camera.look_right(mvp::timer() / 60.0);
-        // camera.look_up(mvp::timer() / 60.0);
-        // camera.look_up(3.0 * f32::cos(mvp::timer()));
-
-        // models.scale(0.1, 0.1, 0.1);
-
-
         unsafe {
             for (i, tid) in text_id.iter().enumerate() {
                 gl::ActiveTexture(gl::TEXTURE0 + i as u32);
                 gl::BindTexture(gl::TEXTURE_2D, tid.clone());
             }
-            // gl::ActiveTexture(gl::TEXTURE0);
-            // gl::BindTexture(gl::TEXTURE_2D, tex1);
-            // gl::ActiveTexture(gl::TEXTURE0 + 1);
-            // gl::BindTexture(gl::TEXTURE_2D, tex2);
         }
-
-
         models.display(&shader_program);
-
         window.gl_swap_window();
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
 
 struct Mouse {
-    pub pressed: bool,
     pub last_x: i32,
     pub last_y: i32,
 }
@@ -186,13 +154,10 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
             } => {
                 models.invert_texture(shader_program);
             },
-            Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => {
+            Event::MouseButtonDown { timestamp: _, window_id: _, which: _, mouse_btn: _, clicks:_, x, y } => {
                 mouse.last_x = x;
                 mouse.last_y = y;
             },
-            // Event::MouseButtonUp { timestamp, window_id, which, mouse_btn, clicks, x, y } => {
-            //     println!("mouse released");
-            // },
 
             _ => {}
         }
@@ -239,7 +204,7 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
     }
 
     if is_a_pressed(&event_pump) {
-        // println!("a pressed");
+
     }
     if is_left_pressed(&event_pump) {
         let (x, y) = get_mouse_pos(event_pump);
@@ -247,12 +212,8 @@ fn process_events(event_pump: &mut sdl2::EventPump, camera: &mut Camera, models:
         let diff_x = (x - mouse.last_x) as f32 * scale;
         let diff_y = (y - mouse.last_y) as f32 * scale;
         camera.look_dir(diff_x, diff_y);
-        // camera.look_up(diff_y);
-
-        // camera.look_right(diff_x);
         mouse.last_x = x;
         mouse.last_y = y;
-        // println!("left pressed");
     }
 
     return true;

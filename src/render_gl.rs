@@ -22,7 +22,6 @@ impl Program {
         }
 
         // continue with error handling here
-
         for shader in shaders {
             unsafe {
                 gl::DetachShader(program_id, shader.id());

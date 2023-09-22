@@ -8,19 +8,6 @@ fn read_lines(filename: String) -> io::Lines<BufReader<File>> {
     return io::BufReader::new(file).lines();
 }
 
-// fn get_point(line: Vec<&str>) -> Vec<f32> {
-//     let mut point = Vec::new();
-//     for byte in line {
-//         let t: f32 = match byte.parse() {
-//             Ok(num) => num,
-//             Err(_) => continue,
-//         };
-//         point.push(t);
-//     }
-//     point
-// }
-
-
 fn get_point(line: Vec<&str>, num: usize) -> Vec<f32> {
     let mut point = Vec::new();
     for byte in line {
@@ -105,7 +92,7 @@ fn create_normal(v: &Vec<f32>) -> Vec<f32> {
 }
 
 fn find_texture(paths: Vec<String>, mtl_name: String) -> String {
-    let mut res = String::from("");
+    let res = String::from("");
     let mut flag = false;
     for path in paths {
         let mut mtl = String::from("resources/mtl/");
@@ -142,7 +129,6 @@ fn find_texture(paths: Vec<String>, mtl_name: String) -> String {
 
 #[derive(Debug)]
 struct Group {
-    name: String,
     faces: Vec<Vec<usize>>,
     uv_points: Vec<Vec<usize>>,
     n_points: Vec<Vec<usize>>,
@@ -155,7 +141,6 @@ pub fn parse(file_path: &str) -> ModelGroup {
     let mut uv_points = Vec::new();
     let mut vns = Vec::new();
     let mut vts = Vec::new();
-    let mut g_name:String = String::from("");
     let mut groups: Vec<Group> = Vec::new();
     let mut n_points = Vec::new();
     let mut mtl_paths = Vec::new();
@@ -199,7 +184,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
                     // println!("text:{}", texture);
                     let g = Group {
                         faces,
-                        name: g_name,
+                        // name: g_name,
                         uv_points,
                         n_points,
                         texture: texture.clone(),
@@ -209,29 +194,7 @@ pub fn parse(file_path: &str) -> ModelGroup {
                     uv_points = Vec::new();
                     n_points = Vec::new();
                 }
-                g_name = s[1].to_string();
             }
-            // "s" => {
-            //     //same as g
-            //     if faces.len() != 0 {
-            //         if texture == "" {
-            //             texture = String::from("resources/textures/metal.bmp");
-            //         }
-            //         println!("text:{}", texture);
-            //         let g = Group {
-            //             faces,
-            //             name: g_name,
-            //             uv_points,
-            //             n_points,
-            //             texture: texture.clone(),
-            //         };
-            //         groups.push(g);
-            //         faces = Vec::new();
-            //         uv_points = Vec::new();
-            //         n_points = Vec::new();
-            //     }
-            //     g_name = s[1].to_string();
-            // }
             "mtllib" => {
                 for i in s[1..].iter() {
                     mtl_paths.push(i.to_string());
@@ -249,7 +212,6 @@ pub fn parse(file_path: &str) -> ModelGroup {
 
     let g = Group {
         faces,
-        name: g_name,
         uv_points,
         n_points,
         texture,

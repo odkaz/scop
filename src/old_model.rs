@@ -91,16 +91,7 @@ impl Model {
         let color_buf = Buffer::new(1);
         color_buf.bind(&Vec::from(colors));
         color_buf.enable();
-        // let textures: [f32; 12] = [
-        //     1.0, 1.0,
-        //     1.0, 0.0,
-        //     0.0, 1.0,
-        //     1.0, 0.0,
-        //     0.0, 0.0,
-        //     0.0, 1.0
-        // ];
         let text_buf = Buffer::new(2);
-        // text_buf.bind(&Vec::from(textures));
         text_buf.bind(&uvs);
         text_buf.enable_texture();
         texture::texture();
@@ -126,7 +117,6 @@ impl Model {
 
     pub fn move_x(&mut self, scale: f32) {
         let mut buf = self.t.clone();
-        // println!("t{:?}", self.t);
         buf[0] = buf[0] + scale;
         self.t = buf;
     }

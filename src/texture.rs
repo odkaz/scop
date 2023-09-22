@@ -1,7 +1,6 @@
 use crate::load_bmp::Bitmap;
 use gl;
 use std::ffi::c_void;
-// use std::path::Path;
 
 pub fn texture(path: &String) -> gl::types::GLuint{
     // load and create a texture
@@ -10,18 +9,13 @@ pub fn texture(path: &String) -> gl::types::GLuint{
     unsafe {
         gl::GenTextures(1, &mut texture);
         gl::BindTexture(gl::TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-                                                  // set the texture wrapping parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_BORDER as i32); // set texture wrapping to gl::REPEAT (default wrapping method)
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_BORDER as i32);
         // set texture filtering parameters
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-        let mut img = Bitmap::open(path).unwrap();
-        // img.rotate_180();
+        let img = Bitmap::open(path).unwrap();
         let data = img.get_data().as_slice();
-
-        // let img = image::open(&Path::new("resources/textures/Airplane.bmp")).expect("Failed to load texture");
-        // let data = img.as_bytes();
         gl::TexImage2D(
             gl::TEXTURE_2D,
             0,

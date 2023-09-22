@@ -158,7 +158,7 @@ pub fn parse(file_path: &str) -> Vec<Model> {
                 g_name = get_g_name(s).unwrap();
             }
             "mtllib" => {
-                // mtl_paths.append(&mut get_mtl_path(s));
+
             }
             "usemtl" => {
 
@@ -167,12 +167,6 @@ pub fn parse(file_path: &str) -> Vec<Model> {
         }
     }
     if vertices.len() != 0 {
-        // println!("v{:?}, {}", vertices, vertices.len());
-        // println!();
-        // println!("u{:?}, {}", uvs, uvs.len());
-        // println!();
-        // println!("n{:?}, {}", norms, norms.len());
-        // println!();
         let model = Model::init(vertices, uvs, norms);
         models.push(model);
     }

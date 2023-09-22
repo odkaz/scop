@@ -70,12 +70,6 @@ impl<T: Clone + Add<Output = T>, const N: usize> Add<&Vector<T, N>> for &Vector<
     }
 }
 
-// impl<T , const N: usize> Mul<Vector<T, N>> for Vector<T, N> {
-//     type Output = Vector<T, N>;
-//     fn mul(self, rhs: Vector<T, N>) -> Vector<T, N> {
-//         self
-//     }
-// }
 impl<T: Sub<Output = T> + Clone, const N: usize> Vector<T, N> {
     pub fn sub(&mut self, v: &Vector<T, N>) {
         let it1 = self.data.iter();

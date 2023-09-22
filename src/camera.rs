@@ -110,9 +110,6 @@ impl Camera {
     }
 
     pub fn look_at(&mut self) -> TMatrix4<f32> {
-        // self.dir = (self.pos.clone() - self.dir.clone()).normalize();
-        // self.right = Vector::cross_product(&self.up, self.get_dir()).normalize();
-        // self.up = Vector::cross_product(self.get_dir(), self.get_right()).normalize();
         Camera::view_matrix(
             self.right.clone(),
             self.up.clone(),

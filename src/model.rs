@@ -1,8 +1,6 @@
 use crate::buffer::Buffer;
 use crate::matrix::{Matrix, TMatrix4};
-// use crate::parse;
 use crate::texture;
-// use crate::vector::Vector;
 use crate::render_gl::Program;
 use gl;
 use std::ffi::{CStr, CString};
@@ -28,7 +26,6 @@ impl ModelGroup {
                 textures.push(m.get_texture());
             }
         }
-        // init_textures()
         ModelGroup {
             models: models,
             pos: [0.0_f32; 3],
@@ -68,7 +65,7 @@ impl ModelGroup {
 
     pub fn init_textures(&self, shader_program: &Program) -> Vec<u32> {
         let mut id = Vec::new();
-        let mut name_list = [
+        let name_list = [
             "texture1",
             "texture2",
             "texture3",
@@ -106,13 +103,13 @@ impl ModelGroup {
     }
 
     pub fn move_y(&mut self, scale: f32) {
-        for mut m in &mut self.models {
+        for m in &mut self.models {
             m.move_y(scale);
         }
     }
 
     pub fn move_z(&mut self, scale: f32) {
-        for mut m in &mut self.models {
+        for m in &mut self.models {
             m.move_z(scale);
         }
     }
@@ -165,23 +162,19 @@ impl ModelGroup {
     }
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Model {
     vertices: Vec<f32>,
-    uvs: Vec<f32>,
     normals: Vec<f32>,
     vao: gl::types::GLuint,
     pos: [f32; 3],
     rot: [f32; 3],
     scl: [f32; 3],
     texture: String,
-    // cen: [f32; 3],
 }
 
 impl Model {
     pub fn init(v: Vec<f32>, uvs: Vec<f32>, norms: Vec<f32>, tex: String) -> Model {
-        // let normals = Self::create_normal(&v);
         let mut vao: gl::types::GLuint = 0;
         unsafe {
             gl::GenVertexArrays(1, &mut vao);
@@ -201,7 +194,6 @@ impl Model {
         let text_buf = Buffer::new(2);
         text_buf.bind(&uvs);
         text_buf.enable_texture();
-        //texture::texture(&tex);
         let norm_buf = Buffer::new(3);
         norm_buf.bind(&norms);
         norm_buf.enable();
@@ -210,7 +202,6 @@ impl Model {
         }
         Model {
             vertices: v,
-            uvs,
             normals: norms,
             vao,
             pos: [0.0_f32; 3],
